@@ -5,6 +5,8 @@ VisualStudioVersion = 16.0.30413.136
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TriviaBot", "TriviaBot\TriviaBot.csproj", "{0D286D10-A577-492B-8075-71F59887FC3A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TriviaBotTests", "TriviaBotTests\TriviaBotTests.csproj", "{E6D736D0-3C12-49E7-AB82-4E757849DA27}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{0D286D10-A577-492B-8075-71F59887FC3A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0D286D10-A577-492B-8075-71F59887FC3A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0D286D10-A577-492B-8075-71F59887FC3A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E6D736D0-3C12-49E7-AB82-4E757849DA27}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E6D736D0-3C12-49E7-AB82-4E757849DA27}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E6D736D0-3C12-49E7-AB82-4E757849DA27}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E6D736D0-3C12-49E7-AB82-4E757849DA27}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

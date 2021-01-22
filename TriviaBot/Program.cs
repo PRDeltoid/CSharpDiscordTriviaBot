@@ -10,18 +10,8 @@ using TriviaBot.Services;
 
 namespace TriviaBot
 {
-    // This is a minimal example of using Discord.Net's command
-    // framework - by no means does it show everything the framework
-    // is capable of.
-    //
-    // You can find samples of using the command framework:
-    // - Here, under the 02_commands_framework sample
-    // - https://github.com/foxbot/DiscordBotBase - a bare-bones bot template
-    // - https://github.com/foxbot/patek - a more feature-filled bot, utilizing more aspects of the library
     class Program
     {
-        // There is no need to implement IDisposable like before as we are
-        // using dependency injection, which handles calling Dispose for us.
         static void Main(string[] args)
             => new Program().MainAsync().GetAwaiter().GetResult();
 
@@ -38,8 +28,6 @@ namespace TriviaBot
                 client.Log += LogAsync;
                 services.GetRequiredService<CommandService>().Log += LogAsync;
 
-                // Tokens should be considered secret data and never hard-coded.
-                // We can read from the environment variable to avoid hardcoding.
                 await client.LoginAsync(TokenType.Bot, Environment.GetEnvironmentVariable("DISCORD_TOKEN"));
                 await client.StartAsync();
 
@@ -62,7 +50,10 @@ namespace TriviaBot
             return new ServiceCollection()
                 .AddSingleton<DiscordSocketClient>()
                 .AddSingleton<CommandService>()
+                .AddSingleton<AnswerHandlingService>()
                 .AddSingleton<CommandHandlingService>()
+                .AddSingleton<ITriviaManager, TriviaManagerService>()
+                .AddSingleton<IQuestionSetManager, QuestionSetManager>()
                 .AddSingleton<HttpClient>()
                 .BuildServiceProvider();
         }

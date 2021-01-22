@@ -3,17 +3,55 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using TriviaBot.Services;
+using static TriviaBot.Services.TriviaManagerService;
 
 namespace TriviaBot.Modules
 {
     // Modules must be public and inherit from an IModuleBase
-    public class PublicModule : ModuleBase<SocketCommandContext>
+    public class TriviaModule : ModuleBase<SocketCommandContext>
     {
-        [Command("ping")]
-        [Alias("pong", "hello")]
-        public Task PingAsync()
-            => ReplyAsync("pong!");
+        ITriviaManager _triviaManager;
 
+        public TriviaModule(ITriviaManager triviaManager)
+        {
+            _triviaManager = triviaManager;
+
+        }
+
+        [Command("tstart")]
+        [Alias("trivia start")]
+        public Task TriviaStartAsync()
+        {
+            _triviaManager.Start();
+            _triviaManager.QuestionReady += _triviaManager_QuestionReady;
+            _triviaManager.QuestionAnswered += _triviaManager_QuestionAnswered;
+            //triviaManagerService.QuestionAnswered
+            return ReplyAsync("Trivia Starting");
+        }
+
+        private void _triviaManager_QuestionAnswered(object sender, System.EventArgs e)
+        {
+            //TODO: Pass a username as an eventarg to congradulate a specific user
+            ReplyAsync("Correct!");
+        }
+
+        private void _triviaManager_QuestionReady(object sender, System.EventArgs e)
+        {
+            string question = ((QuestionEventArgs)e).Question.Question;
+            ReplyAsync(question);
+        }
+
+        [Command("tstop")]
+        [Alias("trivia stop")]
+        public Task TriviaStopAsync()
+            => ReplyAsync("Trivia Stopping");
+
+        [Command("tskip")]
+        [Alias("trivia skip")]
+        public Task TriviaSkipAsync()
+            => ReplyAsync("Skipping Question");
+
+        /*
         // Get info on a user, or the user who invoked the command if one is not specified
         [Command("userinfo")]
         public async Task UserInfoAsync(IUser user = null)
@@ -51,6 +89,6 @@ namespace TriviaBot.Modules
         [Command("guild_only")]
         [RequireContext(ContextType.Guild, ErrorMessage = "Sorry, this command must be ran from within a server, not a DM!")]
         public Task GuildOnlyCommand()
-            => ReplyAsync("Nothing to see here!");
+            => ReplyAsync("Nothing to see here!");*/
     }
 }
