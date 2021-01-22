@@ -33,6 +33,7 @@ namespace TriviaBot
 
                 // Here we initialize the logic required to register our commands.
                 await services.GetRequiredService<CommandHandlingService>().InitializeAsync();
+                services.GetRequiredService<AnswerHandlingService>();
 
                 await Task.Delay(Timeout.Infinite);
             }

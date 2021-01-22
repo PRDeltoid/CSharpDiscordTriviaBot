@@ -24,7 +24,7 @@ namespace TriviaBot.Services
             if(rawMessage.Content.Length > 1) { return; }
 
             string messageText = rawMessage.Content.ToLower();
-            if(messageText != "a" || messageText != "b" || messageText != "c" || messageText != "d") { return; }
+            if(messageText != "a" && messageText != "b" && messageText != "c" && messageText != "d") { return; }
 
             //TODO: Check if answer is correct
             QuestionAnswered?.Invoke(this, new QuestionEventArgs(questionSetManager.CurrentQuestion));
