@@ -11,10 +11,10 @@ namespace TriviaBot.Services
     {
         readonly IQuestionSetManager questionSetManager;
         readonly IScoreKeeperService scoreKeeper;
-        string correctAnswer;
 
         public TriviaManagerService(IQuestionSetManager questionSetManager, IScoreKeeperService scoreKeeper) {
             this.questionSetManager = questionSetManager;
+            this.scoreKeeper = scoreKeeper;
         }
         #region Properties
         public bool IsRunning { get; set; }
