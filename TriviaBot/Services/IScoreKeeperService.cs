@@ -5,8 +5,10 @@ namespace TriviaBot.Services
 {
     public interface IScoreKeeperService
     {
-        Dictionary<ulong, int> Scores { get; }
+        List<UserScoreModel> Scores { get; }
 
         void AddScore(SocketUser user, int score);
+        void ResetScores();
+        int Count { get; }
     }
 }

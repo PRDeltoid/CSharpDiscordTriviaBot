@@ -101,6 +101,7 @@
     <Compile Include="Services\ITriviaManagerService.cs" />
     <Compile Include="Services\ScoreKeeperService.cs" />
     <Compile Include="Services\TriviaManagerService.cs" />
+    <Compile Include="UserScoreModel.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

@@ -11,10 +11,13 @@ namespace TriviaBot.Services
     {
         readonly IQuestionSetManager questionSetManager;
         readonly IScoreKeeperService scoreKeeper;
+        readonly Dictionary<ulong, bool> hasAnsweredCurrentQuestion;
 
         public TriviaManagerService(IQuestionSetManager questionSetManager, IScoreKeeperService scoreKeeper) {
             this.questionSetManager = questionSetManager;
             this.scoreKeeper = scoreKeeper;
+
+            hasAnsweredCurrentQuestion = new Dictionary<ulong, bool>();
         }
         #region Properties
         public bool IsRunning { get; set; }
@@ -30,10 +33,20 @@ namespace TriviaBot.Services
             if(!IsRunning) { return; }
 
             // If we've gotten this far, our message is almost definitely an attempt at a 1-4 answer.
+            // Figure out if the user has already tried to answer this question
+            if(hasAnsweredCurrentQuestion.ContainsKey(rawMessage.Author.Id))
+            {
+                return;
+            } else
+            {
+                hasAnsweredCurrentQuestion.Add(rawMessage.Author.Id, true);
+            }
+
             // Figure out if they answered correctly.
             // Since our answer indexes are 0-3, just add 1 to get the corrisponding answer attempt
             if (rawMessage.Content == (questionSetManager.CurrentQuestion.AnswerNumber + 1).ToString())
             {
+                hasAnsweredCurrentQuestion.Clear();
                 QuestionAnswered?.Invoke(this, new QuestionAnsweredEventArgs(questionSetManager.CurrentQuestion, rawMessage.Author));
                 // Give them a point
                 scoreKeeper.AddScore(rawMessage.Author, 1);
@@ -51,6 +64,10 @@ namespace TriviaBot.Services
         public async void Start()
         {
             IsRunning = true;
+            // Get rid of any answered questions
+            hasAnsweredCurrentQuestion.Clear();
+            // Get rid of old scores
+            scoreKeeper.ResetScores();
             questionSetManager.GetNewQuestionSet(10, questionset => {
                 QuestionReady?.Invoke(this, new QuestionEventArgs(questionSetManager.CurrentQuestion));
             });
@@ -96,9 +113,9 @@ namespace TriviaBot.Services
 
         public class GameOverEventArgs : EventArgs
         {
-            public Dictionary<ulong, int> Scores { get; }
+            public List<UserScoreModel> Scores { get; }
 
-            public GameOverEventArgs(Dictionary<ulong, int> scores)
+            public GameOverEventArgs(List<UserScoreModel> scores)
             {
                 Scores = scores;
             }

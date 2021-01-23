@@ -1,4 +1,5 @@
 ﻿using Discord.WebSocket;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,18 +10,41 @@ namespace TriviaBot.Services
 {
     public class ScoreKeeperService : IScoreKeeperService
     {
-        readonly Dictionary<ulong, int> scores;
+        private readonly Dictionary<ulong, int> scores = new Dictionary<ulong, int>();
+        private readonly DiscordSocketClient _discord;
 
-        public Dictionary<ulong, int> Scores { get => scores; }
-
-        public ScoreKeeperService()
+        public ScoreKeeperService(IServiceProvider services)
         {
-            scores = new Dictionary<ulong, int>();
+            _discord = services.GetRequiredService<DiscordSocketClient>();
+        }
+
+        public List<UserScoreModel> Scores {
+            get
+            {
+                List<UserScoreModel> scoreList = new List<UserScoreModel>();
+                foreach (var score in scores)
+                {
+                    scoreList.Add(new UserScoreModel { Id = score.Key, Score = score.Value, Username = _discord.GetUser(score.Key).Username });
+                }
+                return scoreList;
+            }
+        }
+
+        public void ResetScores()
+        {
+            scores.Clear();
+        }
+
+        public int Count { get => scores.Count; }
+
+        private bool HasScoreForUserId(ulong Id)
+        {
+            return scores.ContainsKey(Id);
         }
 
         public void AddScore(SocketUser user, int score)
         {
-            if (scores.ContainsKey(user.Id))
+            if (HasScoreForUserId(user.Id))
             {
                 scores[user.Id] += score;
             }
@@ -29,6 +53,5 @@ namespace TriviaBot.Services
                 scores.Add(user.Id, score);
             }
         }
-
     }
 }

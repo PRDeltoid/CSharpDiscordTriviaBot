@@ -73,14 +73,14 @@ namespace TriviaBot.Modules
             return null;
         }
 
-        private async Task PrintScores(Dictionary<ulong, int> scores) 
+        private async Task PrintScores(List<UserScoreModel> scores)
         {
             string scoresString = "Score:\n";
             if (scores.Count > 0)
             {
-                foreach (KeyValuePair<ulong, int> score in scores)
+                foreach (UserScoreModel score in scores)
                 {
-                    scoresString += $"{ _discord.GetUser(score.Key).Username } - { score.Value }\n";
+                    scoresString += $"{ score.Username } - { score.Score }\n";
                 }
             }
             await ReplyAsync($"```{ scoresString}```");
