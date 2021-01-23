@@ -97,7 +97,9 @@
     <Compile Include="QuestionSetManager.cs" />
     <Compile Include="Services\AnswerHandlingService.cs" />
     <Compile Include="Services\CommandHandlingService.cs" />
+    <Compile Include="Services\IScoreKeeperService.cs" />
     <Compile Include="Services\ITriviaManagerService.cs" />
+    <Compile Include="Services\ScoreKeeperService.cs" />
     <Compile Include="Services\TriviaManagerService.cs" />
   </ItemGroup>
   <ItemGroup>

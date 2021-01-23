@@ -34,6 +34,7 @@ namespace TriviaBot
                 // Here we initialize the logic required to register our commands.
                 await services.GetRequiredService<CommandHandlingService>().InitializeAsync();
                 services.GetRequiredService<AnswerHandlingService>();
+                services.GetRequiredService<ScoreKeeperService>();
 
                 await Task.Delay(Timeout.Infinite);
             }
@@ -53,6 +54,7 @@ namespace TriviaBot
                 .AddSingleton<CommandService>()
                 .AddSingleton<AnswerHandlingService>()
                 .AddSingleton<CommandHandlingService>()
+                .AddSingleton<IScoreKeeperService, ScoreKeeperService>()
                 .AddSingleton<ITriviaManagerService, TriviaManagerService>()
                 .AddSingleton<IQuestionSetManager, QuestionSetManager>()
                 .AddSingleton<HttpClient>()

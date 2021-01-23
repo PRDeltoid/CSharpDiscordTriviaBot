@@ -10,9 +10,10 @@ namespace TriviaBot.Services
     public class TriviaManagerService : ITriviaManagerService
     {
         readonly IQuestionSetManager questionSetManager;
+        readonly IScoreKeeperService scoreKeeper;
         string correctAnswer;
 
-        public TriviaManagerService(IQuestionSetManager questionSetManager) {
+        public TriviaManagerService(IQuestionSetManager questionSetManager, IScoreKeeperService scoreKeeper) {
             this.questionSetManager = questionSetManager;
         }
         #region Properties
@@ -31,6 +32,7 @@ namespace TriviaBot.Services
             {
                 //TODO: Check if answer is correct
                 QuestionAnswered?.Invoke(this, new QuestionAnsweredEventArgs(questionSetManager.CurrentQuestion, rawMessage.Author));
+                scoreKeeper.AddScore(rawMessage.Author, 1);
                 questionSetManager.GetNextQuestion();
                 QuestionReady?.Invoke(this, new QuestionEventArgs(questionSetManager.CurrentQuestion));
             }
