@@ -15,12 +15,10 @@ namespace TriviaBot.Modules
     public class TriviaModule : ModuleBase<SocketCommandContext>
     {
         readonly ITriviaManagerService _triviaManager;
-        private readonly DiscordSocketClient _discord;
 
         public TriviaModule(IServiceProvider services, ITriviaManagerService triviaManager)
         {
             _triviaManager = triviaManager;
-            _discord = services.GetRequiredService<DiscordSocketClient>();
         }
 
         #region Private Methods
@@ -70,7 +68,13 @@ namespace TriviaBot.Modules
             _triviaManager.OutOfQuestions += _triviaManager_OutOfQuestions;
             _triviaManager.TriviaStopped += _triviaManager_TriviaStopped;
             _triviaManager.TriviaStarted += _triviaManager_TriviaStarted;
+            _triviaManager.QuestionSkipped += _triviaManager_QuestionSkipped;
             return null;
+        }
+
+        private void _triviaManager_QuestionSkipped(object sender, EventArgs e)
+        {
+            ReplyAsync("Skipping Question");
         }
 
         private async Task PrintScores(List<UserScoreModel> scores)
@@ -97,7 +101,14 @@ namespace TriviaBot.Modules
 
         [Command("tskip")]
         [Alias("trivia skip")]
-        public Task TriviaSkipAsync()
-            => ReplyAsync("Skipping Question");
+        public Task TriviaSkipAsync(IUser user = null)
+        {
+            user = user ?? Context.User;
+            // Exit early if no user is passed
+            if (user == null) { return null;  }
+            _triviaManager.VoteSkip(user.Id);
+            ReplyAsync($"{ user.Username} has voted to skip");
+            return null;
+        }
     }
 }

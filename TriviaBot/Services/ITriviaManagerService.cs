@@ -10,6 +10,7 @@ namespace TriviaBot.Services
         void CheckAnswer(SocketMessage rawMessage);
         void Start();
         void Stop();
+        void VoteSkip(ulong voterId);
 
         event EventHandler TriviaStarted;
         event EventHandler TriviaStopped;

@@ -12,12 +12,14 @@ namespace TriviaBot.Services
         readonly IQuestionSetManager questionSetManager;
         readonly IScoreKeeperService scoreKeeper;
         readonly Dictionary<ulong, bool> hasAnsweredCurrentQuestion;
+        readonly Dictionary<ulong, ulong> hasVotedToSkip;
 
         public TriviaManagerService(IQuestionSetManager questionSetManager, IScoreKeeperService scoreKeeper) {
             this.questionSetManager = questionSetManager;
             this.scoreKeeper = scoreKeeper;
 
             hasAnsweredCurrentQuestion = new Dictionary<ulong, bool>();
+            hasVotedToSkip = new Dictionary<ulong, ulong>();
         }
         #region Properties
         public bool IsRunning { get; set; }
@@ -77,6 +79,24 @@ namespace TriviaBot.Services
         {
             IsRunning = false;
             TriviaStopped?.Invoke(this, new GameOverEventArgs(scoreKeeper.Scores));
+        }
+
+        public void VoteSkip(ulong voterId)
+        {
+            if(hasVotedToSkip.ContainsKey(voterId) == false)
+            {
+                hasVotedToSkip.Add(voterId, voterId);
+                if(hasVotedToSkip.Count >= 3)
+                {
+                    QuestionSkipped?.Invoke(this, null);
+                    if(questionSetManager.GetNextQuestion() == null)
+                    {
+                        OutOfQuestions?.Invoke(this, new GameOverEventArgs(scoreKeeper.Scores));
+                        return;
+                    }
+                    QuestionReady?.Invoke(this, new QuestionEventArgs(questionSetManager.CurrentQuestion));
+                }
+            }
         }
         #endregion
 

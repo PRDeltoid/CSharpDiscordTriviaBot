@@ -11,7 +11,7 @@ namespace TriviaBot
         public ulong Id { get; set; }
         public int Score{ get; set; }
         public string Username{ get; set; }
-        //TODO Implement this somehow
+        //TODO Implement this after SQLite DB score tracking 
         //public int LifetimeScore{ get; set; }
     }
 }
