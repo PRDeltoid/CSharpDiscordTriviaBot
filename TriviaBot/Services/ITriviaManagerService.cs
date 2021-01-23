@@ -13,6 +13,7 @@ namespace TriviaBot.Services
 
         event EventHandler TriviaStarted;
         event EventHandler TriviaStopped;
+        event EventHandler OutOfQuestions;
 
         event EventHandler QuestionAnswered;
         event EventHandler QuestionTimedOut;

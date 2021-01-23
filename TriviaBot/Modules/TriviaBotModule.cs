@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Discord;
@@ -26,8 +27,23 @@ namespace TriviaBot.Modules
             _triviaManager.Start();
             _triviaManager.QuestionReady += _triviaManager_QuestionReady;
             _triviaManager.QuestionAnswered += _triviaManager_QuestionAnswered;
+            _triviaManager.OutOfQuestions += _triviaManager_OutOfQuestions;
             //triviaManagerService.QuestionAnswered
             return ReplyAsync("Trivia Starting");
+        }
+
+        private void _triviaManager_OutOfQuestions(object sender, EventArgs e)
+        {
+            ReplyAsync("No more questions! Trivia Stopping");
+            var scores = (GameOverEventArgs)e;
+            string scoresString = "Score:\n";
+            if (scores.Scores.Count > 0)
+            {
+                foreach (KeyValuePair<ulong, int> score in scores.Scores) {
+                    scoresString += $"ID: { score.Key } - { score.Value }\n";
+                }
+            }
+            ReplyAsync($"```{ scoresString}```");
         }
 
         private void _triviaManager_QuestionAnswered(object sender, System.EventArgs e)
