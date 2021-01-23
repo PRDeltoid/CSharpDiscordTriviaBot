@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+using System.Timers;
 
 namespace TriviaBot.Services
 {
@@ -13,6 +13,8 @@ namespace TriviaBot.Services
         readonly IScoreKeeperService scoreKeeper;
         readonly Dictionary<ulong, bool> hasAnsweredCurrentQuestion;
         readonly Dictionary<ulong, ulong> hasVotedToSkip;
+        readonly Timer questionTimer;
+        readonly int questionTimerLength = 15;
 
         public TriviaManagerService(IQuestionSetManager questionSetManager, IScoreKeeperService scoreKeeper) {
             this.questionSetManager = questionSetManager;
@@ -20,6 +22,11 @@ namespace TriviaBot.Services
 
             hasAnsweredCurrentQuestion = new Dictionary<ulong, bool>();
             hasVotedToSkip = new Dictionary<ulong, ulong>();
+            questionTimer = new Timer();
+            questionTimer.AutoReset = false;
+            questionTimer.Enabled = false;
+            questionTimer.Elapsed += QuestionTimer_Elapsed;
+            questionTimer.Interval = questionTimerLength * 1000;
         }
         #region Properties
         public bool IsRunning { get; set; }
@@ -53,13 +60,7 @@ namespace TriviaBot.Services
                 // Give them a point
                 scoreKeeper.AddScore(rawMessage.Author, 1);
                 // And ask the next question
-                // if there are not more questions, alert any listeners and bail early
-                if(questionSetManager.GetNextQuestion() == null)
-                {
-                    OutOfQuestions?.Invoke(this, new GameOverEventArgs(scoreKeeper.Scores));
-                    return;
-                }
-                QuestionReady?.Invoke(this, new QuestionEventArgs(questionSetManager.CurrentQuestion));
+                GetNextQuestion();
             }
         }
 
@@ -72,6 +73,7 @@ namespace TriviaBot.Services
             scoreKeeper.ResetScores();
             questionSetManager.GetNewQuestionSet(10, questionset => {
                 QuestionReady?.Invoke(this, new QuestionEventArgs(questionSetManager.CurrentQuestion));
+                StartQuestionTimer();
             });
         }
 
@@ -89,14 +91,44 @@ namespace TriviaBot.Services
                 if(hasVotedToSkip.Count >= 3)
                 {
                     QuestionSkipped?.Invoke(this, null);
-                    if(questionSetManager.GetNextQuestion() == null)
-                    {
-                        OutOfQuestions?.Invoke(this, new GameOverEventArgs(scoreKeeper.Scores));
-                        return;
-                    }
-                    QuestionReady?.Invoke(this, new QuestionEventArgs(questionSetManager.CurrentQuestion));
+                    GetNextQuestion();
                 }
             }
+        }
+        #endregion
+
+        #region Private Methods
+        private void GetNextQuestion()
+        {
+            StopQuestionTimer();
+            // if there are not more questions, alert any listeners and bail early
+            if(questionSetManager.GetNextQuestion() == null)
+            {
+                OutOfQuestions?.Invoke(this, new GameOverEventArgs(scoreKeeper.Scores));
+                return;
+            }
+            // Remove any skip votes before we show the next question
+            hasVotedToSkip.Clear();
+            QuestionReady?.Invoke(this, new QuestionEventArgs(questionSetManager.CurrentQuestion));
+
+            //Start a timer to skip the question after a set amount of seconds
+            StartQuestionTimer();
+        }
+
+        private void StartQuestionTimer()
+        {
+            questionTimer.Enabled = true;
+        }
+
+        private void StopQuestionTimer()
+        {
+            questionTimer.Enabled = false;
+        }
+
+        private void QuestionTimer_Elapsed(object sender, ElapsedEventArgs e)
+        {
+            QuestionTimedOut?.Invoke(this, e);
+            GetNextQuestion();
         }
         #endregion
 

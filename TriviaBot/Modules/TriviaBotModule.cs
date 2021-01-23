@@ -56,20 +56,10 @@ namespace TriviaBot.Modules
 
             await ReplyAsync(questionPrompt);
         }
-        #endregion
 
-        [Command("tstart")]
-        [Alias("trivia start")]
-        public Task TriviaStartAsync()
+        private void _triviaManager_QuestionTimedOut(object sender, EventArgs e)
         {
-            _triviaManager.Start();
-            _triviaManager.QuestionReady += _triviaManager_QuestionReady;
-            _triviaManager.QuestionAnswered += _triviaManager_QuestionAnswered;
-            _triviaManager.OutOfQuestions += _triviaManager_OutOfQuestions;
-            _triviaManager.TriviaStopped += _triviaManager_TriviaStopped;
-            _triviaManager.TriviaStarted += _triviaManager_TriviaStarted;
-            _triviaManager.QuestionSkipped += _triviaManager_QuestionSkipped;
-            return null;
+            ReplyAsync("Ran out of time! Next question.");
         }
 
         private void _triviaManager_QuestionSkipped(object sender, EventArgs e)
@@ -88,6 +78,24 @@ namespace TriviaBot.Modules
                 }
             }
             await ReplyAsync($"```{ scoresString}```");
+        }
+        #endregion
+
+        #region Public Methods
+        [Command("tstart")]
+        [Alias("trivia start")]
+        public Task TriviaStartAsync()
+        {
+            _triviaManager.Start();
+            _triviaManager.TriviaStarted += _triviaManager_TriviaStarted;
+            _triviaManager.QuestionReady += _triviaManager_QuestionReady;
+            _triviaManager.QuestionAnswered += _triviaManager_QuestionAnswered;
+            _triviaManager.OutOfQuestions += _triviaManager_OutOfQuestions;
+            _triviaManager.TriviaStopped += _triviaManager_TriviaStopped;
+            _triviaManager.TriviaStarted += _triviaManager_TriviaStarted;
+            _triviaManager.QuestionSkipped += _triviaManager_QuestionSkipped;
+            _triviaManager.QuestionTimedOut += _triviaManager_QuestionTimedOut;
+            return null;
         }
 
 
@@ -110,5 +118,6 @@ namespace TriviaBot.Modules
             ReplyAsync($"{ user.Username} has voted to skip");
             return null;
         }
+        #endregion
     }
 }

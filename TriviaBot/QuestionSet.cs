@@ -24,6 +24,7 @@ namespace TriviaBot
 
         public QuestionModel GetQuestion(int index)
         {
+            if (index > questions.Count) { return null; }
             return questions[index];
         }
     }
