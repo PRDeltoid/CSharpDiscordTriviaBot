@@ -53,7 +53,7 @@ namespace TriviaBot
                 .AddSingleton<CommandService>()
                 .AddSingleton<AnswerHandlingService>()
                 .AddSingleton<CommandHandlingService>()
-                .AddSingleton<ITriviaManager, TriviaManagerService>()
+                .AddSingleton<ITriviaManagerService, TriviaManagerService>()
                 .AddSingleton<IQuestionSetManager, QuestionSetManager>()
                 .AddSingleton<HttpClient>()
                 .BuildServiceProvider();

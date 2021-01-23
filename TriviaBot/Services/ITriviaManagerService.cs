@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace TriviaBot.Services
 {
-    public interface ITriviaManager
+    public interface ITriviaManagerService
     {
         bool IsRunning { get; set; }
         void CheckAnswer(SocketMessage rawMessage);

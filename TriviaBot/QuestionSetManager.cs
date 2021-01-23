@@ -29,6 +29,15 @@ namespace TriviaBot
                     ResponseModel responseObject = JsonConvert.DeserializeObject<ResponseModel>(responseBody);
                     if(responseObject.ResponseCode == 0 && responseObject.Results.Count > 0)
                     {
+                        foreach(QuestionModel question in responseObject.Results) {
+                            question.Answers = new List<string>(question.IncorrectAnswers)
+                            {
+                                question.CorrectAnswer
+                            };
+
+                            question.Answers.Shuffle();
+                            question.AnswerNumber = question.Answers.FindIndex(x => x == question.CorrectAnswer);
+                        }
                         QuestionSet = new QuestionSet(responseObject.Results);
                         currentQuestionIndex = 0;
                         callback(QuestionSet);
@@ -61,6 +70,7 @@ namespace TriviaBot
     }
 
     class ResponseModel
+
     {
         public int ResponseCode { get; set; }
         public List<QuestionModel> Results { get; set; }

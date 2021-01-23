@@ -86,6 +86,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ListExtensions.cs" />
     <Compile Include="Modules\TriviaBotModule.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -96,7 +97,7 @@
     <Compile Include="QuestionSetManager.cs" />
     <Compile Include="Services\AnswerHandlingService.cs" />
     <Compile Include="Services\CommandHandlingService.cs" />
-    <Compile Include="Services\ITriviaManager.cs" />
+    <Compile Include="Services\ITriviaManagerService.cs" />
     <Compile Include="Services\TriviaManagerService.cs" />
   </ItemGroup>
   <ItemGroup>

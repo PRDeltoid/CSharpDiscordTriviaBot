@@ -12,5 +12,7 @@ namespace TriviaBot
         public List<string> IncorrectAnswers { get; set; }
         public string Category { get; set; }
         public string Difficulty { get; set; }
+        public List<string> Answers { get; set; }
+        public int AnswerNumber { get; set; }
     }
 }

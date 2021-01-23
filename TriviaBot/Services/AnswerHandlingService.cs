@@ -12,11 +12,11 @@ namespace TriviaBot.Services
     public class AnswerHandlingService
     {
         private readonly DiscordSocketClient _discord;
-        private readonly ITriviaManager _trivia_manager;
+        private readonly ITriviaManagerService _trivia_manager;
 
         public AnswerHandlingService(IServiceProvider services) {
             _discord = services.GetRequiredService<DiscordSocketClient>();
-            _trivia_manager = services.GetRequiredService<ITriviaManager>();
+            _trivia_manager = services.GetRequiredService<ITriviaManagerService>();
 
             // Hook MessageReceived so we can process each message to see
             // if it qualifies as an answer
@@ -27,6 +27,11 @@ namespace TriviaBot.Services
         {
             if (!(rawMessage is SocketUserMessage message)) return;
             if (message.Source != MessageSource.User) return;
+            if(rawMessage.Content.Length > 1) { return; }
+
+            string messageText = rawMessage.Content;
+            if(messageText != "1" && messageText != "2" && messageText != "3" && messageText != "4") { return; }
+
             _trivia_manager.CheckAnswer(rawMessage);
         }
     }

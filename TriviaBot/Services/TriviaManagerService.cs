@@ -7,9 +7,10 @@ using System.Threading.Tasks;
 
 namespace TriviaBot.Services
 {
-    public class TriviaManagerService : ITriviaManager
+    public class TriviaManagerService : ITriviaManagerService
     {
         readonly IQuestionSetManager questionSetManager;
+        string correctAnswer;
 
         public TriviaManagerService(IQuestionSetManager questionSetManager) {
             this.questionSetManager = questionSetManager;
@@ -18,17 +19,21 @@ namespace TriviaBot.Services
         public bool IsRunning { get; set; }
         #endregion
 
+        #region Private Method
+        #endregion
+
         #region Public Methods
         public async void CheckAnswer(SocketMessage rawMessage)
         {
-            if(rawMessage.Content.Length > 1) { return; }
-
-            string messageText = rawMessage.Content.ToLower();
-            if(messageText != "a" && messageText != "b" && messageText != "c" && messageText != "d") { return; }
-
-            //TODO: Check if answer is correct
-            QuestionAnswered?.Invoke(this, new QuestionEventArgs(questionSetManager.CurrentQuestion));
-            questionSetManager.GetNextQuestion();
+            // If we've gotten this far, our message is almost definitely an attempt at a 1-4 answer.
+            // Figure out if they answered correctly.
+            if (rawMessage.Content == (questionSetManager.CurrentQuestion.AnswerNumber + 1).ToString())
+            {
+                //TODO: Check if answer is correct
+                QuestionAnswered?.Invoke(this, new QuestionAnsweredEventArgs(questionSetManager.CurrentQuestion, rawMessage.Author));
+                questionSetManager.GetNextQuestion();
+                QuestionReady?.Invoke(this, new QuestionEventArgs(questionSetManager.CurrentQuestion));
+            }
         }
 
         public async void Start()
@@ -58,6 +63,17 @@ namespace TriviaBot.Services
             public QuestionEventArgs(QuestionModel question)
             {
                 Question = question;
+            }
+        }
+        public class QuestionAnsweredEventArgs : EventArgs
+        {
+            public QuestionModel Question { get; }
+            public SocketUser User { get; }
+
+            public QuestionAnsweredEventArgs(QuestionModel question, SocketUser user)
+            {
+                Question = question;
+                User = user;
             }
         }
     }

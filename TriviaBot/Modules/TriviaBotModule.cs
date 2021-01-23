@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
@@ -10,9 +11,9 @@ namespace TriviaBot.Modules
     // Modules must be public and inherit from an IModuleBase
     public class TriviaModule : ModuleBase<SocketCommandContext>
     {
-        ITriviaManager _triviaManager;
+        ITriviaManagerService _triviaManager;
 
-        public TriviaModule(ITriviaManager triviaManager)
+        public TriviaModule(ITriviaManagerService triviaManager)
         {
             _triviaManager = triviaManager;
 
@@ -31,20 +32,28 @@ namespace TriviaBot.Modules
 
         private void _triviaManager_QuestionAnswered(object sender, System.EventArgs e)
         {
-            //TODO: Pass a username as an eventarg to congradulate a specific user
-            ReplyAsync("Correct!");
+            var user = ((QuestionAnsweredEventArgs)e).User;
+            ReplyAsync($"{user.Username} got the correct answer!");
         }
 
         private void _triviaManager_QuestionReady(object sender, System.EventArgs e)
         {
-            string question = ((QuestionEventArgs)e).Question.Question;
-            ReplyAsync(question);
+            QuestionModel question = ((QuestionEventArgs)e).Question;
+            string questionPrompt = $"```{question.Question}:\n1:{question.Answers[0]}\n2:{question.Answers[1]}\n3:{question.Answers[2]}\n4:{question.Answers[3]}```";
+
+            Console.WriteLine($"Answer: {question.CorrectAnswer }");
+
+            ReplyAsync(questionPrompt);
         }
 
         [Command("tstop")]
         [Alias("trivia stop")]
         public Task TriviaStopAsync()
-            => ReplyAsync("Trivia Stopping");
+        {
+            _triviaManager.Stop();
+            ReplyAsync("Trivia Stopping");
+            return null;
+        }
 
         [Command("tskip")]
         [Alias("trivia skip")]
