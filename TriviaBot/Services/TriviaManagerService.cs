@@ -64,14 +64,14 @@ namespace TriviaBot.Services
             }
         }
 
-        public async void Start()
+        public async void Start(int numberOfQuestions, string difficulty)
         {
             IsRunning = true;
             // Get rid of any answered questions
             hasAnsweredCurrentQuestion.Clear();
             // Get rid of old scores
             scoreKeeper.ResetScores();
-            questionSetManager.GetNewQuestionSet(10, questionset => {
+            questionSetManager.GetNewQuestionSet(numberOfQuestions, difficulty, questionset => {
                 QuestionReady?.Invoke(this, new QuestionEventArgs(questionSetManager.CurrentQuestion));
                 StartQuestionTimer();
             });

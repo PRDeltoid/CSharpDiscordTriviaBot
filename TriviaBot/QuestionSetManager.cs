@@ -15,13 +15,13 @@ namespace TriviaBot
         public IQuestionSet QuestionSet { get; internal set; }
         public QuestionModel CurrentQuestion { get => QuestionSet.GetQuestion(currentQuestionIndex); }
 
-        async public void GetNewQuestionSet(int questionCount, Action<IQuestionSet> callback)
+        async public void GetNewQuestionSet(int questionCount, string difficulty, Action<IQuestionSet> callback)
         {
             try
             {
                 using (HttpClient client = new HttpClient())
                 {
-                    HttpResponseMessage response = await client.GetAsync(ComposeURL(questionCount));
+                    HttpResponseMessage response = await client.GetAsync(ComposeURL(questionCount, difficulty));
                     response.EnsureSuccessStatusCode();
                     string responseBody = await response.Content.ReadAsStringAsync();
                     //Console.WriteLine(responseBody);
@@ -61,9 +61,14 @@ namespace TriviaBot
             return QuestionSet.GetQuestion(currentQuestionIndex);
         }
 
-        private string ComposeURL(int questionCount)
+        private string ComposeURL(int questionCount, string difficulty)
         {
-            return $"https://opentdb.com/api.php?amount={ questionCount }&type=multiple";
+            string v = $"https://opentdb.com/api.php?amount={ questionCount }&type=multiple";
+            if(difficulty != null)
+            {
+                v += $"&difficulty ={ difficulty }";
+            }
+            return v;
         }
 
         public event EventHandler OutOfQuestions;

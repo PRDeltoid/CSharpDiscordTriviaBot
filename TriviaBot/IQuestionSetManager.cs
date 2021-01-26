@@ -10,7 +10,7 @@ namespace TriviaBot
     {
         QuestionModel CurrentQuestion { get; }
         IQuestionSet QuestionSet { get; }
-        void GetNewQuestionSet(int questionCount, Action<IQuestionSet> callback);
+        void GetNewQuestionSet(int questionCount, string difficulty, Action<IQuestionSet> callback);
         QuestionModel GetNextQuestion();
     }
 }

@@ -8,7 +8,7 @@ namespace TriviaBot.Services
     {
         bool IsRunning { get; set; }
         void CheckAnswer(SocketMessage rawMessage);
-        void Start();
+        void Start(int numberOfQuestions, string difficulty);
         void Stop();
         void VoteSkip(ulong voterId);
 
