@@ -22,6 +22,11 @@ namespace TriviaBot
             return questions;
         }
 
+        /// <summary>
+        /// Get the question at index. 
+        /// </summary>
+        /// <param name="index">The index of the question in the QuestionSet</param>
+        /// <returns>The question at index. If no question exists, return null./returns>
         public QuestionModel GetQuestion(int index)
         {
             if (index >= questions.Count) { return null; }

@@ -23,7 +23,12 @@ namespace TriviaBot.Services
             _discord.MessageReceived += MessageReceivedAsync;
         }
 
-        public async Task MessageReceivedAsync(SocketMessage rawMessage)
+        /// <summary>
+        /// Determines if a given message is an "answer" (ie. 1-4)
+        /// Passes it to trivia manage if it is a valid answer
+        /// </summary>
+        /// <param name="rawMessage">The message to interpret</param>
+        private async Task MessageReceivedAsync(SocketMessage rawMessage)
         {
             if (!(rawMessage is SocketUserMessage message)) return;
             if (message.Source != MessageSource.User) return;
