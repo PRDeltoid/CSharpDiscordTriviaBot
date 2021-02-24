@@ -54,6 +54,7 @@ namespace TriviaBot
                 .AddSingleton<AnswerHandlingService>()
                 .AddSingleton<CommandHandlingService>()
                 .AddSingleton<IScoreKeeperService, ScoreKeeperService>()
+                .AddSingleton<ILifetimeScorekeeper, LifetimeScorekeeperService>()
                 .AddSingleton<ITriviaManagerService, TriviaManagerService>()
                 .AddSingleton<IQuestionSetManager, QuestionSetManager>()
                 .AddSingleton<HttpClient>()

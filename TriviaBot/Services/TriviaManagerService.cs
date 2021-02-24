@@ -80,6 +80,7 @@ namespace TriviaBot.Services
         public async void Stop()
         {
             IsRunning = false;
+            questionTimer.Enabled = false;
             TriviaStopped?.Invoke(this, new GameOverEventArgs(scoreKeeper.Scores));
         }
 

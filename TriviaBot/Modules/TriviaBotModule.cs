@@ -19,12 +19,14 @@ namespace TriviaBot.Modules
     public class TriviaModule : ModuleBase<SocketCommandContext>
     {
         readonly ITriviaManagerService _triviaManager;
+        private readonly ILifetimeScorekeeper _lifetimeScorekeeper;
         readonly Timer messageSendTimer;
         readonly Queue<string> messageSendingQueue;
 
-        public TriviaModule(IServiceProvider services, ITriviaManagerService triviaManager)
+        public TriviaModule(IServiceProvider services, ITriviaManagerService triviaManager, ILifetimeScorekeeper lifetimeScorekeeper)
         {
             _triviaManager = triviaManager;
+            _lifetimeScorekeeper = lifetimeScorekeeper;
 
             // The timer which represents how often to send messages
             messageSendTimer = new Timer
@@ -76,9 +78,8 @@ namespace TriviaBot.Modules
         private async void _triviaManager_QuestionReady(object sender, System.EventArgs e)
         {
             QuestionModel question = ((QuestionEventArgs)e).Question;
-            string questionString = WebUtility.HtmlDecode(question.Question);
-            string questionPrompt = $"```{questionString}\n1:{question.Answers[0]}\n2:{question.Answers[1]}\n3:{question.Answers[2]}\n4:{question.Answers[3]}```";
-
+            string questionPrompt = $"```{question.Question}\n1:{question.Answers[0]}\n2:{question.Answers[1]}\n3:{question.Answers[2]}\n4:{question.Answers[3]}```";
+            questionPrompt = WebUtility.HtmlDecode(questionPrompt);
             Console.WriteLine($"Answer: {question.CorrectAnswer }");
 
             messageSendingQueue.Enqueue(questionPrompt);
@@ -109,6 +110,29 @@ namespace TriviaBot.Modules
                 }
             }
             messageSendingQueue.Enqueue(scoresString);
+        }
+
+        [Command("tscores")]
+        [Alias("trivia scores")]
+        public Task PrintLifetimeScores(int numberOfscores = 10)
+        {
+            if(numberOfscores > 25)
+            {
+                numberOfscores = 50;
+            }
+
+            List<UserLifetimeScoreModel> scores = _lifetimeScorekeeper.GetTopScores(numberOfscores);
+
+            string scoresString = "Top Scores\n";
+            if (scores.Count > 0)
+            {
+                foreach (UserLifetimeScoreModel score in scores)
+                {
+                    scoresString += $"{ score.PlayerId } - { score.Score }\n";
+                }
+            }
+            messageSendingQueue.Enqueue(scoresString);
+            return null;
         }
         #endregion
 
