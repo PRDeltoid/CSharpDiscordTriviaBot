@@ -6,8 +6,10 @@ using System.Threading.Tasks;
 
 namespace TriviaBot
 {
-    public class ScoresTable : DatabaseTable<UserLifetimeScoreModel, ulong>
+    public class UserScoreModel
     {
-        public ScoresTable() : base("Scores") { }
+        public ulong Id { get; set; }
+        public int Score{ get; set; }
+        public string Username{ get; set; }
     }
 }

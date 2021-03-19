@@ -26,7 +26,7 @@ namespace TriviaBot.Services
 
         public List<UserLifetimeScoreModel> GetTopScores(int numberOfScores = 10)
         {
-            return new List<UserLifetimeScoreModel>(); // Database.Scores.AsQueryable().OrderBy(x => x.Score).Take(numberOfScores).ToList();
+            return Database.Scores.OrderBy(x => x.Score).Take(numberOfScores).ToList();
         }
     }
 }
