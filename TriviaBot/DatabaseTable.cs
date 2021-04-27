@@ -149,17 +149,69 @@ namespace TriviaBot
             throw new NotImplementedException();
         }
 
-        public bool UpdateRow(T newRow) //, K oldRowId)
+        public bool UpdateRow(T newRow, K oldRowId)
         {
-            throw new NotImplementedException();
+            // Get all cols including key (in case that is being updated)
+            var cols = GetAllColumnNames(true);
+            var values = new List<string>();
+            // Get the key name
+            var keyCol = GetKeyColumnName();
+
+            // Compose the UPDATE query string
+            string queryString = $"UPDATE {TableName} SET ";
+            foreach(string col in cols)
+            {
+                var value = newRow.GetType().GetProperty(col).GetValue(newRow).ToString();
+                if (value != null)
+                {
+                    queryString += $"{col} = {value},";
+                    values.Add(value);
+                }
+            }
+            queryString = queryString.Substring(0, queryString.Length);
+            queryString += $"WHERE {keyCol} = {oldRowId}";
+
+            // Open a connection and execute the query string
+            using (SqlConnection connection = new SqlConnection(Settings.Default.ConnectionString))
+            {
+                try
+                {
+                    connection.Open();
+                    SqlCommand command = new SqlCommand(queryString, connection);
+                    command.ExecuteScalar();
+                    return true;
+                }
+                catch
+                {
+                    throw;
+                }
+            }
         }
 
         public IEnumerator GetEnumerator()
         {
             return this.GetEnumerator();
         }
+
+        private List<string> GetAllColumnNames(bool includeKey)
+        {
+            List<string> stringList = new List<string>();
+            var keyColumn = GetKeyColumnName();
+            foreach (PropertyInfo prop in typeof(T).GetProperties())
+            {
+                string propColumnName = GetColumnNameOfProperty(prop);
+                // If the property is a key column and we want to exclude those, continue next loop iteration
+                if(propColumnName == keyColumn && includeKey == false)
+                {
+                    continue;
+                }
+                stringList.Add(propColumnName);
+            }
+            return stringList;
+        }
     }
-    
+
+    #region Attribute Definitions
     public class ColumnName : System.Attribute
     {
         public string Name { get; }
@@ -178,5 +230,5 @@ namespace TriviaBot
 
         }
     }
-
+    #endregion
 }
