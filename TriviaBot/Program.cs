@@ -7,6 +7,7 @@ using Discord;
 using Discord.WebSocket;
 using Discord.Commands;
 using TriviaBot.Services;
+using TriviaBot.Modules;
 
 namespace TriviaBot
 {
@@ -21,44 +22,25 @@ namespace TriviaBot
             // when you are finished using it, at the end of your app's lifetime.
             // If you use another dependency injection framework, you should inspect
             // its documentation for the best way to do this.
-            using (var services = ConfigureServices())
+            using (var services = ConfigurationContainer.ConfigureServices())
             {
-                var client = services.GetRequiredService<DiscordSocketClient>();
+                var _discord = services.GetRequiredService<DiscordSocketClient>();
+                _discord.Log += LogAsync;
+                _discord.LoginAsync(TokenType.Bot, Environment.GetEnvironmentVariable("DISCORD_TOKEN"));
+                _discord.StartAsync();
 
-                client.Log += LogAsync;
                 services.GetRequiredService<CommandService>().Log += LogAsync;
 
-                await client.LoginAsync(TokenType.Bot, Environment.GetEnvironmentVariable("DISCORD_TOKEN"));
-                await client.StartAsync();
-
-                // Here we initialize the logic required to register our commands.
-                await services.GetRequiredService<CommandHandlingService>().InitializeAsync();
+                services.GetRequiredService<CommandHandlingService>().InitializeAsync();
                 services.GetRequiredService<AnswerHandlingService>();
-
                 await Task.Delay(Timeout.Infinite);
             }
         }
-
         private Task LogAsync(LogMessage log)
         {
             Console.WriteLine(log.ToString());
-
             return Task.CompletedTask;
         }
 
-        private ServiceProvider ConfigureServices()
-        {
-            return new ServiceCollection()
-                .AddSingleton<DiscordSocketClient>()
-                .AddSingleton<CommandService>()
-                .AddSingleton<AnswerHandlingService>()
-                .AddSingleton<CommandHandlingService>()
-                .AddSingleton<IScoreKeeperService, ScoreKeeperService>()
-                .AddSingleton<ILifetimeScorekeeper, LifetimeScorekeeperService>()
-                .AddSingleton<ITriviaManagerService, TriviaManagerService>()
-                .AddSingleton<IQuestionSetManager, QuestionSetManager>()
-                .AddSingleton<HttpClient>()
-                .BuildServiceProvider();
-        }
     }
 }
