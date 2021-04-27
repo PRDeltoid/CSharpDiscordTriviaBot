@@ -30,9 +30,9 @@ namespace TriviaBot.Services
         public int Count { get => scores.Count; }
         #endregion
 
-        public ScoreKeeperService(IServiceProvider services)
+        public ScoreKeeperService(DiscordSocketClient discordSocket)
         {
-            _discord = services.GetRequiredService<DiscordSocketClient>();
+            _discord = discordSocket;
         }
 
         #region Public Region

@@ -16,14 +16,15 @@ namespace TriviaBot.Modules
     /// <summary>
     /// A module which responds trivia commands
     /// </summary>
-    public class TriviaModule : ModuleBase<SocketCommandContext>
+    [Obsolete]
+    public class TriviaModule //: ModuleBase<SocketCommandContext>
     {
         readonly ITriviaManagerService _triviaManager;
         private readonly ILifetimeScorekeeper _lifetimeScorekeeper;
         readonly Timer messageSendTimer;
         readonly Queue<string> messageSendingQueue;
 
-        public TriviaModule(IServiceProvider services, ITriviaManagerService triviaManager, ILifetimeScorekeeper lifetimeScorekeeper)
+        public TriviaModule(ITriviaManagerService triviaManager, ILifetimeScorekeeper lifetimeScorekeeper)
         {
             _triviaManager = triviaManager;
             _lifetimeScorekeeper = lifetimeScorekeeper;
@@ -45,7 +46,7 @@ namespace TriviaBot.Modules
             // If we have messages to send, send 'em!
             if(messageSendingQueue.Count > 0)
             {
-                ReplyAsync(messageSendingQueue.Dequeue());
+                //ReplyAsync(messageSendingQueue.Dequeue());
             }
         }
 
@@ -183,7 +184,7 @@ namespace TriviaBot.Modules
         [Alias("trivia skip")]
         public Task TriviaSkipAsync(IUser user = null)
         {
-            user = user ?? Context.User;
+            //user = user ?? Context.User;
             // Exit early if no user is passed
             if (user == null) { return null;  }
             _triviaManager.VoteSkip(user.Id);

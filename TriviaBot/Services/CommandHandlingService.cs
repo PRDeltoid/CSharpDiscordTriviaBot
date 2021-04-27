@@ -14,10 +14,10 @@ namespace TriviaBot.Services
         private readonly DiscordSocketClient _discord;
         private readonly IServiceProvider _services;
 
-        public CommandHandlingService(IServiceProvider services)
+        public CommandHandlingService(IServiceProvider services, DiscordSocketClient discord, CommandService commands)
         {
-            _commands = services.GetRequiredService<CommandService>();
-            _discord = services.GetRequiredService<DiscordSocketClient>();
+            _commands = commands;
+            _discord = discord;
             _services = services;
 
             // Hook CommandExecuted to handle post-command-execution logic.

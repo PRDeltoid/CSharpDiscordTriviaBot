@@ -6,20 +6,21 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TriviaBot.Modules;
 
 namespace TriviaBot.Services
 {
     public class AnswerHandlingService
     {
         private readonly DiscordSocketClient _discord;
-        private readonly ITriviaManagerService _trivia_manager;
+        private readonly ITriviaBotModule _triviaBotManager;
 
-        public AnswerHandlingService(IServiceProvider services) {
-            _discord = services.GetRequiredService<DiscordSocketClient>();
-            _trivia_manager = services.GetRequiredService<ITriviaManagerService>();
-
+        public AnswerHandlingService(DiscordSocketClient discord, ITriviaBotModule triviaBotManager)
+        {
+            _discord = discord;
+            _triviaBotManager = triviaBotManager;
             // Hook MessageReceived so we can process each message to see
-            // if it qualifies as an answer
+            // if it qualifies as an answern
             _discord.MessageReceived += MessageReceivedAsync;
         }
 
@@ -32,12 +33,13 @@ namespace TriviaBot.Services
         {
             if (!(rawMessage is SocketUserMessage message)) return;
             if (message.Source != MessageSource.User) return;
-            if(rawMessage.Content.Length > 1) { return; }
+            if (message.Author.IsBot) { return; }
+            if (rawMessage.Content.Length > 1) { return; }
 
             string messageText = rawMessage.Content;
             if(messageText != "1" && messageText != "2" && messageText != "3" && messageText != "4") { return; }
 
-            _trivia_manager.CheckAnswer(rawMessage);
+            _triviaBotManager.CheckAnswer(rawMessage);
         }
     }
 }

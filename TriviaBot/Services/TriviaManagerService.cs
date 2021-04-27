@@ -7,6 +7,7 @@ using System.Timers;
 
 namespace TriviaBot.Services
 {
+    [Obsolete("replaced by TriviabotManager and TriviaBot classes")]
     public class TriviaManagerService : ITriviaManagerService
     {
         readonly IQuestionSetManager questionSetManager;
