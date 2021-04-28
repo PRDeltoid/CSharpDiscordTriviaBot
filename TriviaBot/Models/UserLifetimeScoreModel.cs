@@ -9,9 +9,7 @@ namespace TriviaBot
     public class UserLifetimeScoreModel
     {
         [KeyColumn]
-        public ulong Key { get; set; }
-        [ColumnName("UserID")]
-        public ulong PlayerId { get; set; }
+        public ulong UserID { get; set; }
         public uint Score { get; set; }
         public uint Wins { get; set; }
     }

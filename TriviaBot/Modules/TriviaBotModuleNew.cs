@@ -98,7 +98,7 @@ namespace TriviaBot.Services
             string scoreString = "Top Scores:\n--------------";
             foreach(UserLifetimeScoreModel score in scores)
             {
-                scoreString += $"{score.PlayerId} - {score.Score} - {score.Wins}\n";
+                scoreString += $"{score.UserID} - {score.Score} - {score.Wins}\n";
             }
 
             ReplyAsync(scoreString);

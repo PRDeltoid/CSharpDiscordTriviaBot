@@ -17,7 +17,7 @@ namespace TriviaBot.Services
             if (user == null)
             {
                 // If user does not exist, create them
-                Database.Scores.AddRow(new UserLifetimeScoreModel { PlayerId = userId, Score = score });
+                Database.Scores.AddRow(new UserLifetimeScoreModel { UserID = userId, Score = score });
             }
             else
             {
@@ -31,7 +31,7 @@ namespace TriviaBot.Services
             if (user == null)
             {
                 // If user does not exist, create them
-                Database.Scores.AddRow(new UserLifetimeScoreModel { PlayerId = userId, Wins = 1});
+                Database.Scores.AddRow(new UserLifetimeScoreModel { UserID = userId, Wins = 1});
             }
             else
             {

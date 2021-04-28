@@ -129,7 +129,7 @@ namespace TriviaBot.Modules
             {
                 foreach (UserLifetimeScoreModel score in scores)
                 {
-                    scoresString += $"{ score.PlayerId } - { score.Score }\n";
+                    scoresString += $"{ score.UserID } - { score.Score }\n";
                 }
             }
             messageSendingQueue.Enqueue(scoresString);
