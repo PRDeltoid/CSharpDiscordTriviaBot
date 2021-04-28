@@ -10,7 +10,7 @@ namespace TriviaBot.Services
 {
     public class ScoreKeeperService : IScoreKeeperService
     {
-        private readonly Dictionary<ulong, int> scores = new Dictionary<ulong, int>();
+        private readonly Dictionary<ulong, uint> scores = new Dictionary<ulong, uint>();
         private readonly DiscordSocketClient _discord;
 
         #region Properties
@@ -41,7 +41,7 @@ namespace TriviaBot.Services
             scores.Clear();
         }
 
-        public void AddScore(SocketUser user, int score)
+        public void AddScore(SocketUser user, uint score)
         {
             if (HasScoreForUserId(user.Id))
             {

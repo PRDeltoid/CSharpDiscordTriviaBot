@@ -7,7 +7,7 @@ namespace TriviaBot.Services
     {
         List<UserScoreModel> Scores { get; }
 
-        void AddScore(SocketUser user, int score);
+        void AddScore(SocketUser user, uint score);
         void ResetScores();
         int Count { get; }
     }
