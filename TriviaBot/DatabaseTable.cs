@@ -115,11 +115,13 @@ namespace TriviaBot
                     var rows = command.ExecuteReader();
                     if (rows.HasRows)
                     {
+                        rows.Read();
                         var temp = new T();
-                        rows.NextResult();
+                        //rows.NextResult();
                         foreach (PropertyInfo prop in typeof(T).GetProperties())
                         {
-                            temp.GetType().GetProperty(prop.Name).SetValue(rows[GetColumnNameOfProperty(prop)].GetType(), rows[GetColumnNameOfProperty(prop)]);
+                            Type propType = prop.PropertyType;
+                            temp.GetType().GetProperty(prop.Name).SetValue(temp, Convert.ChangeType(rows[GetColumnNameOfProperty(prop)], propType));
                         }
                         return temp;
                     }
@@ -159,8 +161,8 @@ namespace TriviaBot
                     values.Add(value);
                 }
             }
-            queryString = queryString.Substring(0, queryString.Length);
-            queryString += $"WHERE {keyCol} = {oldRowId}";
+            queryString = queryString.Substring(0, queryString.Length-1);
+            queryString += $" WHERE {keyCol} = {oldRowId}";
 
             // Open a connection and execute the query string
             using (SQLiteConnection connection = new SQLiteConnection(ConnectionString))
