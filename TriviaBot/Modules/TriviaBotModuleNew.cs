@@ -13,12 +13,14 @@ namespace TriviaBot.Services
     public class TriviaBotModuleNew : ModuleBase<SocketCommandContext>, ITriviaBotModule
     {
         private readonly DiscordSocketClient _discord;
+        private readonly ILifetimeScorekeeper _lifetimeScorekeeper;
 
         static Dictionary<ulong, TriviaBotService> TriviaBots { get; set; } = new Dictionary<ulong, TriviaBotService>();
 
-        public TriviaBotModuleNew(DiscordSocketClient discord) //, CommandService commandService)
+        public TriviaBotModuleNew(DiscordSocketClient discord, ILifetimeScorekeeper lifetimeScorekeeper) //, CommandService commandService)
         {
             _discord = discord;
+            _lifetimeScorekeeper = lifetimeScorekeeper;
         }
 
 
@@ -35,7 +37,7 @@ namespace TriviaBot.Services
             }
 
             //TODO: Create factory to generate trivia bots using DI'd services/managers
-            var triviaBot = new TriviaBotService(Context.Channel, new ChatService(_discord),new ScoreKeeperService(_discord), new QuestionSetManager());
+            var triviaBot = new TriviaBotService(Context.Channel, new ChatService(_discord),new ScoreKeeperService(_discord), new LifetimeScorekeeperService(), new QuestionSetManager());
             TriviaBots.Add(Context.Channel.Id, triviaBot);
 
             // 10 questions by default
@@ -81,6 +83,25 @@ namespace TriviaBot.Services
             {
                 bot.VoteSkip(Context.User);
             }
+            return null;
+        }
+
+        [Command("ttop")]
+        [Alias("trivia top")]
+        public Task TriviaPrintTopScoresAsync(IUser user = null, int numberOfScores = 10)
+        {
+            user = user ?? Context.User;
+            // Exit early if no user is passed
+            if (user == null) { return null; }
+
+            var scores = _lifetimeScorekeeper.GetTopScores(numberOfScores);
+            string scoreString = "Top Scores:\n--------------";
+            foreach(UserLifetimeScoreModel score in scores)
+            {
+                scoreString += $"{score.PlayerId} - {score.Score} - {score.Wins}\n";
+            }
+
+            ReplyAsync(scoreString);
             return null;
         }
 
