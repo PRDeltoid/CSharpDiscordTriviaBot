@@ -1,7 +1,9 @@
-﻿using System;
+﻿using Microsoft.Data.Sqlite;
+using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Data.SqlClient;
+using System.Data.SQLite;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -13,49 +15,38 @@ namespace TriviaBot
 {
     public class DatabaseTable<T, K> : IEnumerable where T : new()
     {
-        string TableName { get; set; }
+        public string TableName { get; internal set; }
+
+        private string ConnectionString
+        {
+            get
+            {
+                return System.Configuration.ConfigurationManager.
+                ConnectionStrings["TriviaBotDb"].ConnectionString;
+            }
+        }
 
         public DatabaseTable(string tableName)
         {
             TableName = tableName;
         }
-
         private string GetKeyColumnName()
         {
-            Type t = typeof(T).GetProperties().
-                            Where(prop => prop.IsDefined(typeof(KeyColumn), false)).First().GetType();
+            PropertyInfo t = typeof(T).GetProperties().
+                            Where(prop => Attribute.IsDefined(prop, typeof(KeyColumn), false)).First();
 
             if (t == null)
             {
                 throw new Exception("No key attribute set"); ;
             }
 
-            if (t != typeof(K))
+            if (t.PropertyType != typeof(K))
             {
                 throw new Exception("Key value type is not the same as marked key attribute.");
             }
 
             // If we get here, there is a key property and its type matches the passed K type. Return it to the caller
             return t.Name;
-            /*foreach (PropertyInfo prop in typeof(T).GetProperties())
-            {
-                var attr = prop.GetCustomAttribute(typeof(KeyColumn));
-                if (attr != null)
-                {
-                    //Make sure the property marked as a key is the same type as the passed Key parameter (so our GetRowByID function works correctly)
-                    if (prop.GetType() != typeof(K))
-                    {
-                        throw new Exception("Key value type is not the same as marked key attribute.");
-                    }
-
-                    // If we get here, there is a key property and its type matches the passed K type. Return it to the caller
-                    return prop.Name;
-                }
-            }
-
-            if we get here, we went through every prop and none were set as a key.
-             There must be a key, so throw an error
-            throw new Exception("No key attribute set");*/
         }
 
         private string GetColumnNameOfProperty(PropertyInfo propInfo)
@@ -83,7 +74,7 @@ namespace TriviaBot
                 values.Add(propColumnName, newRow.GetType().GetProperty(prop.Name).GetValue(newRow, null));
             }
 
-            using (SqlConnection connection = new SqlConnection(Settings.Default.ConnectionString))
+            using (SQLiteConnection connection = new SQLiteConnection(ConnectionString))
             {
                 string colNames = "";
                 string colValues = "";
@@ -97,7 +88,7 @@ namespace TriviaBot
                 colNames = colNames.Substring(1);
 
                 string queryString = $"INSERT INTO { TableName } ({colNames}) VALUES ({colValues})";
-                SqlCommand command = new SqlCommand(queryString, connection);
+                SQLiteCommand command = new SQLiteCommand(queryString, connection);
                 connection.Open();
                 try
                 {
@@ -113,14 +104,14 @@ namespace TriviaBot
 
         public T GetRow(K id)
         {
-            using (SqlConnection connection = new SqlConnection(Settings.Default.ConnectionString))
+            using (SQLiteConnection connection = new SQLiteConnection(ConnectionString))
             {
                 string keyName = GetKeyColumnName();
-                string queryString = $"SELECT * WHERE {keyName} = {id}";
+                string queryString = $"SELECT * FROM {TableName} WHERE {keyName} = {id}";
                 try
                 {
                     connection.Open();
-                    SqlCommand command = new SqlCommand(queryString, connection);
+                    SQLiteCommand command = new SQLiteCommand(queryString, connection);
                     var rows = command.ExecuteReader();
                     if (rows.HasRows)
                     {
@@ -172,12 +163,12 @@ namespace TriviaBot
             queryString += $"WHERE {keyCol} = {oldRowId}";
 
             // Open a connection and execute the query string
-            using (SqlConnection connection = new SqlConnection(Settings.Default.ConnectionString))
+            using (SQLiteConnection connection = new SQLiteConnection(ConnectionString))
             {
                 try
                 {
                     connection.Open();
-                    SqlCommand command = new SqlCommand(queryString, connection);
+                    SQLiteCommand command = new SQLiteCommand(queryString, connection);
                     command.ExecuteScalar();
                     return true;
                 }
@@ -192,13 +183,13 @@ namespace TriviaBot
         {
             string queryString = $"SELECT * FROM {TableName}";
             // Open a connection and execute the query string
-            using (SqlConnection connection = new SqlConnection(Settings.Default.ConnectionString))
+            using (SQLiteConnection connection = new SQLiteConnection(ConnectionString))
             {
                 try
                 {
                     List<T> objects = new List<T>();
                     connection.Open();
-                    SqlCommand command = new SqlCommand(queryString, connection);
+                    SQLiteCommand command = new SQLiteCommand(queryString, connection);
                     var reader = command.ExecuteReader();
                     while(reader.Read())
                     {
@@ -218,7 +209,7 @@ namespace TriviaBot
             }
         }
 
-        private List<string> GetAllColumnNames(bool includeKey)
+        public List<string> GetAllColumnNames(bool includeKey)
         {
             List<string> stringList = new List<string>();
             var keyColumn = GetKeyColumnName();
@@ -256,4 +247,6 @@ namespace TriviaBot
         }
     }
     #endregion
+
+
 }
