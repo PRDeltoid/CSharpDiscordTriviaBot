@@ -190,7 +190,32 @@ namespace TriviaBot
 
         public IEnumerator GetEnumerator()
         {
-            return this.GetEnumerator();
+            string queryString = $"SELECT * FROM {TableName}";
+            // Open a connection and execute the query string
+            using (SqlConnection connection = new SqlConnection(Settings.Default.ConnectionString))
+            {
+                try
+                {
+                    List<T> objects = new List<T>();
+                    connection.Open();
+                    SqlCommand command = new SqlCommand(queryString, connection);
+                    var reader = command.ExecuteReader();
+                    while(reader.Read())
+                    {
+                        var obj = new T();
+                        foreach(string prop in GetAllColumnNames(true))
+                        {
+                            obj.GetType().GetProperty(prop).SetValue(obj, reader[prop]);
+                        }
+                        objects.Add(obj);
+                    }
+                    return objects.GetEnumerator();
+                }
+                catch
+                {
+                    throw;
+                }
+            }
         }
 
         private List<string> GetAllColumnNames(bool includeKey)
