@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using System.Timers;
@@ -20,6 +21,7 @@ namespace TriviaBot.Services
         #region Members
         readonly IQuestionSetManager _questionSetManager;
         private readonly IScoreKeeperService _scoreKeeper;
+        private readonly ILifetimeScorekeeper _lifetimeScoreService;
         private IChannel _channel;
         private IChatService _chatService;
         readonly Timer messageSendTimer;
@@ -33,12 +35,13 @@ namespace TriviaBot.Services
         #region Properties
         public bool IsRunning { get; set; }
         #endregion
-        public TriviaBotService(IChannel channel, IChatService chatService, IScoreKeeperService scoreKeeper, IQuestionSetManager questionSetManager)
+        public TriviaBotService(IChannel channel, IChatService chatService, IScoreKeeperService scoreKeeper, ILifetimeScorekeeper lifetimeScoreService, IQuestionSetManager questionSetManager)
         {
             _channel = channel;
             _chatService = chatService;
             _questionSetManager = questionSetManager;
             _scoreKeeper = scoreKeeper;
+            _lifetimeScoreService = lifetimeScoreService;
 
             hasAnsweredCurrentQuestion = new Dictionary<ulong, bool>();
             hasVotedToSkip = new Dictionary<ulong, ulong>();
@@ -112,7 +115,7 @@ namespace TriviaBot.Services
             _questionTimer.Enabled = false;
             messageSendingQueue.Enqueue("Trivia Stopping");
 
-            await PrintScores(_scoreKeeper.Scores);
+            TriviaEnding();
         }
 
         public void VoteSkip(IUser user)
@@ -150,7 +153,7 @@ namespace TriviaBot.Services
         private void OutOfQuestions()
         {
             messageSendingQueue.Enqueue("No more questions! Trivia Stopping");
-            PrintScores(_scoreKeeper.Scores);
+            TriviaEnding();
         }
 
         private void QuestionAnswered(IUser user)
@@ -218,6 +221,25 @@ namespace TriviaBot.Services
         private void StopQuestionTimer()
         {
             _questionTimer.Enabled = false;
+        }
+
+        private async void TriviaEnding()
+        {
+            var scores = _scoreKeeper.Scores;
+
+            // Find the winner and give them a lifetime win
+            var winner = scores.OrderByDescending(x => x.Score).First();
+            if(winner != null)
+            {
+                _lifetimeScoreService.AddLifetimeWin(winner.Id);
+            }
+
+            // Add each user's score to their lifetime record
+            foreach(UserScoreModel score in scores)
+            {
+                _lifetimeScoreService.AddLifetimeScore(score.Id, score.Score);
+            }
+            await PrintScores(_scoreKeeper.Scores);
         }
         #endregion
 
