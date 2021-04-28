@@ -12,8 +12,7 @@ namespace TriviaBot
         public ulong Key { get; set; }
         [ColumnName("UserID")]
         public ulong PlayerId { get; set; }
-        [ColumnName("GuildID")]
-        public ulong GuildId { get; set; }
         public uint Score { get; set; }
+        public uint Wins { get; set; }
     }
 }
