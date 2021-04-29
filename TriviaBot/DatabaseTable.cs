@@ -30,48 +30,15 @@ namespace TriviaBot
         {
             TableName = tableName;
         }
-        private string GetKeyColumnName()
-        {
-            PropertyInfo t = typeof(T).GetProperties().
-                            Where(prop => Attribute.IsDefined(prop, typeof(KeyColumn), false)).First();
-
-            if (t == null)
-            {
-                throw new Exception("No key attribute set"); ;
-            }
-
-            if (t.PropertyType != typeof(K))
-            {
-                throw new Exception("Key value type is not the same as marked key attribute.");
-            }
-
-            // If we get here, there is a key property and its type matches the passed K type. Return it to the caller
-            return t.Name;
-        }
-
-        private string GetColumnNameOfProperty(PropertyInfo propInfo)
-        {
-            // If the prop has the ColumnName attribute, return that instead
-            var col = propInfo.GetCustomAttribute(typeof(ColumnName)) as ColumnName;
-            if (col != null)
-            {
-                return col.Name;
-            }
-            else
-            {
-                return propInfo.Name;
-            }
-        }
 
         public bool AddRow(T newRow)
         {
             //Column name/Value pairs to be used for our new row
             Dictionary<string, object> values = new Dictionary<string, object>();
 
-            foreach (PropertyInfo prop in typeof(T).GetProperties())
+            foreach (string propName in GetAllColumnNames(true))
             {
-                string propColumnName = GetColumnNameOfProperty(prop);
-                values.Add(propColumnName, newRow.GetType().GetProperty(prop.Name).GetValue(newRow, null));
+                values.Add(propName, GetPropertyValue(newRow, propName));
             }
 
             using (SQLiteConnection connection = new SQLiteConnection(ConnectionString))
@@ -118,10 +85,9 @@ namespace TriviaBot
                         rows.Read();
                         var temp = new T();
                         //rows.NextResult();
-                        foreach (PropertyInfo prop in typeof(T).GetProperties())
+                        foreach (string propName in GetAllColumnNames(true))
                         {
-                            Type propType = prop.PropertyType;
-                            temp.GetType().GetProperty(prop.Name).SetValue(temp, Convert.ChangeType(rows[GetColumnNameOfProperty(prop)], propType));
+                            SetPropertyValue(temp, rows[propName], propName);
                         }
                         return temp;
                     }
@@ -137,11 +103,6 @@ namespace TriviaBot
             }
         }
 
-        public bool ChangeValue(string propName, object value)
-        {
-            throw new NotImplementedException();
-        }
-
         public bool UpdateRow(T newRow, K oldRowId)
         {
             // Get all cols including key (in case that is being updated)
@@ -154,11 +115,11 @@ namespace TriviaBot
             string queryString = $"UPDATE {TableName} SET ";
             foreach(string col in cols)
             {
-                var value = newRow.GetType().GetProperty(col).GetValue(newRow).ToString();
-                if (value != null)
+                string colValue = GetPropertyValue(newRow, col).ToString();
+                if (colValue != null)
                 {
-                    queryString += $"{col} = {value},";
-                    values.Add(value);
+                    queryString += $"{col} = {colValue},";
+                    values.Add(colValue);
                 }
             }
             queryString = queryString.Substring(0, queryString.Length-1);
@@ -186,39 +147,27 @@ namespace TriviaBot
         {
             string queryString = $"SELECT * FROM {TableName}";
             // Open a connection and execute the query string
-            using (SQLiteConnection connection = new SQLiteConnection(ConnectionString))
+            using SQLiteConnection connection = new SQLiteConnection(ConnectionString);
+            try
             {
-                try
+                List<T> objects = new List<T>();
+                connection.Open();
+                SQLiteCommand command = new SQLiteCommand(queryString, connection);
+                var reader = command.ExecuteReader();
+                while (reader.Read())
                 {
-                    List<T> objects = new List<T>();
-                    connection.Open();
-                    SQLiteCommand command = new SQLiteCommand(queryString, connection);
-                    var reader = command.ExecuteReader();
-                    while(reader.Read())
+                    var obj = new T();
+                    foreach (string prop in GetAllColumnNames(true))
                     {
-                        var obj = new T();
-                        foreach(string prop in GetAllColumnNames(true))
-                        {
-                            var propType = obj.GetType().GetProperty(prop).PropertyType;
-                            
-                            if(reader[prop].GetType() != propType)
-                            {
-                                // If the reader and prop type don't match, we need to cast them
-                                obj.GetType().GetProperty(prop).SetValue(obj, Convert.ChangeType(reader[prop], propType));
-                            } else
-                            {
-                                obj.GetType().GetProperty(prop).SetValue(obj, reader[prop]);
-                            }
-                            
-                        }
-                        objects.Add(obj);
+                        SetPropertyValue(obj, reader[prop], prop);
                     }
-                    return objects.GetEnumerator();
+                    objects.Add(obj);
                 }
-                catch
-                {
-                    throw;
-                }
+                return objects.GetEnumerator();
+            }
+            catch
+            {
+                throw;
             }
         }
 
@@ -238,6 +187,62 @@ namespace TriviaBot
             }
             return stringList;
         }
+
+        private string GetKeyColumnName()
+        {
+            PropertyInfo t = typeof(T).GetProperties().
+                            Where(prop => Attribute.IsDefined(prop, typeof(KeyColumn), false)).First();
+
+            if (t == null)
+            {
+                throw new Exception("No key attribute set"); ;
+            }
+
+            if (t.PropertyType != typeof(K))
+            {
+                throw new Exception("Key value type is not the same as marked key attribute.");
+            }
+
+            // If we get here, there is a key property and its type matches the passed K type. Return it to the caller
+            return t.Name;
+        }
+
+        private string GetColumnNameOfProperty(PropertyInfo propInfo)
+        {
+            // If the prop has the ColumnName attribute, return that instead
+            var col = propInfo.GetCustomAttribute(typeof(ColumnName)) as ColumnName;
+            if (col != null)
+            {
+                return col.Name;
+            }
+            else
+            {
+                return propInfo.Name;
+            }
+        }
+
+        private PropertyInfo GetProperty(object t, string propertyName)
+        {
+            return t.GetType().GetProperty(propertyName);
+        }
+
+        private Type GetPropertyType(object t, string propertyName)
+        {
+            return t.GetType().GetProperty(propertyName).PropertyType;
+        }
+
+        private object GetPropertyValue(object t, string propertyName)
+        {
+            Type type = GetPropertyType(t, propertyName);
+            return Convert.ChangeType(GetProperty(t, propertyName).GetValue(t), type);
+        }
+
+        private void SetPropertyValue(object t, object value, string propertyName)
+        {
+            Type type = GetPropertyType(t, propertyName);
+            GetProperty(t, propertyName).SetValue(t, Convert.ChangeType(value, type));
+        }
+
     }
 
     #region Attribute Definitions
