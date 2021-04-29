@@ -17,7 +17,7 @@ namespace TriviaBot
     {
         public string TableName { get; internal set; }
 
-        private string ConnectionString
+        private static string ConnectionString
         {
             get
             {
@@ -215,7 +215,7 @@ namespace TriviaBot
             }
         }
 
-        private string GetSQLType(Type t)
+        private static string GetSQLType(Type t)
         {
             switch (t)
             {
@@ -230,7 +230,7 @@ namespace TriviaBot
             }
         }
 
-        private string GetKeyColumnName()
+        private static string GetKeyColumnName()
         {
             PropertyInfo t = typeof(T).GetProperties().
                             Where(prop => Attribute.IsDefined(prop, typeof(KeyColumn), false)).First();
@@ -249,7 +249,7 @@ namespace TriviaBot
             return t.Name;
         }
 
-        private string GetColumnNameOfProperty(PropertyInfo propInfo)
+        private static string GetColumnNameOfProperty(PropertyInfo propInfo)
         {
             // If the prop has the ColumnName attribute, return that instead
             var col = propInfo.GetCustomAttribute(typeof(ColumnName)) as ColumnName;
@@ -263,17 +263,17 @@ namespace TriviaBot
             }
         }
 
-        private PropertyInfo GetProperty(object t, string propertyName)
+        private static PropertyInfo GetProperty(object t, string propertyName)
         {
             return t.GetType().GetProperty(propertyName);
         }
 
-        private Type GetPropertyType(object t, string propertyName)
+        private static Type GetPropertyType(object t, string propertyName)
         {
             return t.GetType().GetProperty(propertyName).PropertyType;
         }
 
-        private Type GetPropertyType(string propertyName)
+        private static Type GetPropertyType(string propertyName)
         {
             T t = new T();
             return t.GetType().GetProperty(propertyName).PropertyType;
