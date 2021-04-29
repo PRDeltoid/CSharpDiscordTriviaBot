@@ -95,12 +95,17 @@ namespace TriviaBot.Services
             if (user == null) { return null; }
 
             var scores = _lifetimeScorekeeper.GetTopScores(numberOfScores);
-            string scoreString = "Top Scores:\n--------------";
+            string scoreString = "```" +
+                                 "Top Scores:\n" +
+                                 "User          Score   Wins\n" +
+                                 "----------------------------\n";
             foreach(UserLifetimeScoreModel score in scores)
             {
-                scoreString += $"{score.UserID} - {score.Score} - {score.Wins}\n";
+                string username = _discord.GetUser(score.UserID).Username;
+                scoreString += $"{username,-15}  {score.Score,-6}  {score.Wins,-4}\n";
             }
 
+            scoreString += "```";
             ReplyAsync(scoreString);
             return null;
         }
