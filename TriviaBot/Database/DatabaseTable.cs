@@ -78,8 +78,8 @@ namespace TriviaBot
             try
             {
                 connection.Open();
-                SQLiteCommand command = new SQLiteCommand(queryString, connection);
-                var rows = command.ExecuteReader();
+                using SQLiteCommand command = new SQLiteCommand(queryString, connection);
+                using SQLiteDataReader rows = command.ExecuteReader();
                 if (rows.HasRows)
                 {
                     rows.Read();
@@ -122,23 +122,21 @@ namespace TriviaBot
                 }
             }
             queryString = queryString.Substring(0, queryString.Length-1);
-            queryString += $" WHERE {keyCol} = {oldRowId}";
+            queryString += $" WHERE {keyCol} = {oldRowId};";
 
             // Open a connection and execute the query string
-            using (SQLiteConnection connection = new SQLiteConnection(ConnectionString))
+            using SQLiteConnection connection = new SQLiteConnection(ConnectionString);
+            try
             {
-                try
-                {
-                    connection.Open();
-                    SQLiteCommand command = new SQLiteCommand(queryString, connection);
-                    int rowsAffected = command.ExecuteNonQuery();
-                    // Only return true if at least one row was updated
-                    return rowsAffected > 0 ? true : false;
-                }
-                catch
-                {
-                    throw;
-                }
+                connection.Open();
+                using SQLiteCommand command = new SQLiteCommand(queryString, connection);
+                int rowsAffected = command.ExecuteNonQuery();
+                // Only return true if at least one row was updated
+                return rowsAffected > 0 ? true : false;
+            }
+            catch
+            {
+                throw;
             }
         }
 
@@ -152,7 +150,7 @@ namespace TriviaBot
                 List<T> objects = new List<T>();
                 connection.Open();
                 SQLiteCommand command = new SQLiteCommand(queryString, connection);
-                var reader = command.ExecuteReader();
+                using SQLiteDataReader reader = command.ExecuteReader();
                 while (reader.Read())
                 {
                     var obj = new T();
@@ -193,7 +191,7 @@ namespace TriviaBot
             var createTableString = $"CREATE TABLE IF NOT EXISTS {TableName} (";
             var keyCol = GetKeyColumnName();
             var keyType = GetSQLType(GetPropertyType(keyCol));
-            createTableString += $"{keyCol} {keyType} PRIMARY KEY";
+            createTableString += $"{keyCol} {keyType} PRIMARY KEY,";
             foreach (string col in colNames)
             {
                 string type = GetSQLType(GetPropertyType(col));
@@ -220,6 +218,7 @@ namespace TriviaBot
             switch (t)
             {
                 case Type intType when intType == typeof(int):
+                case Type uintType when uintType == typeof(uint):
                 case Type ulongType when ulongType == typeof(ulong):
                 case Type longType when longType == typeof(long):
                     return "INTEGER";
