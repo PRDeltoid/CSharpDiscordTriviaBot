@@ -29,6 +29,7 @@ namespace TriviaBot
         public DatabaseTable(string tableName)
         {
             TableName = tableName;
+            CreateTableIfNotExists();
         }
 
         public bool AddRow(T newRow)
@@ -71,35 +72,33 @@ namespace TriviaBot
 
         public T GetRow(K id)
         {
-            using (SQLiteConnection connection = new SQLiteConnection(ConnectionString))
+            using SQLiteConnection connection = new SQLiteConnection(ConnectionString);
+            string keyName = GetKeyColumnName();
+            string queryString = $"SELECT * FROM {TableName} WHERE {keyName} = {id}";
+            try
             {
-                string keyName = GetKeyColumnName();
-                string queryString = $"SELECT * FROM {TableName} WHERE {keyName} = {id}";
-                try
+                connection.Open();
+                SQLiteCommand command = new SQLiteCommand(queryString, connection);
+                var rows = command.ExecuteReader();
+                if (rows.HasRows)
                 {
-                    connection.Open();
-                    SQLiteCommand command = new SQLiteCommand(queryString, connection);
-                    var rows = command.ExecuteReader();
-                    if (rows.HasRows)
+                    rows.Read();
+                    var temp = new T();
+                    //rows.NextResult();
+                    foreach (string propName in GetAllColumnNames(true))
                     {
-                        rows.Read();
-                        var temp = new T();
-                        //rows.NextResult();
-                        foreach (string propName in GetAllColumnNames(true))
-                        {
-                            SetPropertyValue(temp, rows[propName], propName);
-                        }
-                        return temp;
+                        SetPropertyValue(temp, rows[propName], propName);
                     }
-                    else
-                    {
-                        return default;
-                    }
+                    return temp;
                 }
-                catch
+                else
                 {
-                    throw;
+                    return default;
                 }
+            }
+            catch
+            {
+                throw;
             }
         }
 
@@ -188,6 +187,51 @@ namespace TriviaBot
             return stringList;
         }
 
+        private void CreateTableIfNotExists()
+        {
+            var colNames = GetAllColumnNames(false);
+            var createTableString = $"CREATE TABLE IF NOT EXISTS {TableName} (";
+            var keyCol = GetKeyColumnName();
+            var keyType = GetSQLType(GetPropertyType(keyCol));
+            createTableString += $"{keyCol} {keyType} PRIMARY KEY";
+            foreach (string col in colNames)
+            {
+                string type = GetSQLType(GetPropertyType(col));
+                createTableString += $"{col} {type},";
+            }
+            createTableString = createTableString.Substring(0, createTableString.Length - 1);
+            createTableString += ");";
+
+            using SQLiteConnection connection = new SQLiteConnection(ConnectionString);
+            SQLiteCommand command = new SQLiteCommand(createTableString, connection);
+            connection.Open();
+            try
+            {
+                int rows = command.ExecuteNonQuery();
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
+        private string GetSQLType(Type t)
+        {
+            switch (t)
+            {
+                case Type intType when intType == typeof(int):
+                case Type ulongType when ulongType == typeof(ulong):
+                case Type longType when longType == typeof(long):
+                    return "INTEGER";
+                    break;
+                case Type stringType when stringType == typeof(string):
+                    return "TEXT";
+                    break;
+                default:
+                    throw new Exception("Unknown SQL type encountered");
+            }
+        }
+
         private string GetKeyColumnName()
         {
             PropertyInfo t = typeof(T).GetProperties().
@@ -231,6 +275,12 @@ namespace TriviaBot
             return t.GetType().GetProperty(propertyName).PropertyType;
         }
 
+        private Type GetPropertyType(string propertyName)
+        {
+            T t = new T();
+            return t.GetType().GetProperty(propertyName).PropertyType;
+        }
+
         private object GetPropertyValue(object t, string propertyName)
         {
             Type type = GetPropertyType(t, propertyName);
@@ -242,7 +292,6 @@ namespace TriviaBot
             Type type = GetPropertyType(t, propertyName);
             GetProperty(t, propertyName).SetValue(t, Convert.ChangeType(value, type));
         }
-
     }
 
     #region Attribute Definitions
