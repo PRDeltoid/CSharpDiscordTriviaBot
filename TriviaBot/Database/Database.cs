@@ -21,19 +21,6 @@ namespace TriviaBot
             Scores = new ScoresTable();
 
             CreateDatabaseIfNotExists();
-            //CreateTableIfNotExists(Scores);
-        }
-
-        private void CreateTableIfNotExists(DatabaseTable<object, object> table)
-        {
-            // TODO: Finish this
-            var colNames = table.GetAllColumnNames(true);
-            var createTableString = "CREATE TABLE IF NOT EXISTS {table.TableName} ("; 
-            foreach(string col in colNames)
-            {
-                //createTableString += $"{col}"
-            }
-            throw new NotImplementedException();
         }
 
         private void CreateDatabaseIfNotExists()
