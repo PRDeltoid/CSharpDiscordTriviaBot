@@ -171,8 +171,9 @@ namespace TriviaBot
                 {
                     connection.Open();
                     SQLiteCommand command = new SQLiteCommand(queryString, connection);
-                    command.ExecuteScalar();
-                    return true;
+                    int rowsAffected = command.ExecuteNonQuery();
+                    // Only return true if at least one row was updated
+                    return rowsAffected > 0 ? true : false;
                 }
                 catch
                 {
@@ -198,7 +199,17 @@ namespace TriviaBot
                         var obj = new T();
                         foreach(string prop in GetAllColumnNames(true))
                         {
-                            obj.GetType().GetProperty(prop).SetValue(obj, reader[prop]);
+                            var propType = obj.GetType().GetProperty(prop).PropertyType;
+                            
+                            if(reader[prop].GetType() != propType)
+                            {
+                                // If the reader and prop type don't match, we need to cast them
+                                obj.GetType().GetProperty(prop).SetValue(obj, Convert.ChangeType(reader[prop], propType));
+                            } else
+                            {
+                                obj.GetType().GetProperty(prop).SetValue(obj, reader[prop]);
+                            }
+                            
                         }
                         objects.Add(obj);
                     }

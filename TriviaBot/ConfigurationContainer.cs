@@ -21,7 +21,7 @@ namespace TriviaBot
                 .AddSingleton<CommandService>()
                 .AddSingleton<CommandHandlingService>()
                 .AddSingleton<AnswerHandlingService>()
-                .AddSingleton<ILifetimeScorekeeper, LifetimeScorekeeperService>()
+                .AddScoped<ILifetimeScorekeeper, LifetimeScorekeeperService>()
                 .AddScoped<ITriviaBotModule, TriviaBotModuleNew>()
                 .AddScoped<IScoreKeeperService, ScoreKeeperService>()
                 .AddScoped<IQuestionSetManager, QuestionSetManager>()
