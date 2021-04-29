@@ -35,7 +35,7 @@ namespace TriviaBot.Services
             }
             else
             {
-                Database.Scores.UpdateRow(new UserLifetimeScoreModel { Score = user.Wins + 1 }, userId);
+                Database.Scores.UpdateRow(new UserLifetimeScoreModel { Wins = user.Wins + 1 }, userId);
             }
         }
 
