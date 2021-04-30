@@ -104,8 +104,8 @@ namespace TriviaBot
 
         public bool UpdateRow(T newRow, K oldRowId)
         {
-            // Get all cols including key (in case that is being updated)
-            var cols = GetAllColumnNames(true);
+            // Get all cols excluding key
+            var cols = GetAllColumnNames(false);
             var values = new List<string>();
             // Get the key name
             var keyCol = GetKeyColumnName();
