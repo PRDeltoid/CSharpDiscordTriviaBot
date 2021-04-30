@@ -9,33 +9,38 @@ namespace TriviaBot.Services
 {
     public class LifetimeScorekeeperService : ILifetimeScorekeeper
     {
-        Database Database { get; } = new Database();
+        readonly Database _database;
+
+        public LifetimeScorekeeperService(Database database)
+        {
+            _database = database;
+        }
 
         public void AddLifetimeScore(ulong userId, uint score)
         {
-            var user = Database.Scores.GetRow(userId);
+            var user = _database.Scores.GetRow(userId);
             if (user == null)
             {
                 // If user does not exist, create them
-                Database.Scores.AddRow(new UserLifetimeScoreModel { UserID = userId, Score = score });
+                _database.Scores.AddRow(new UserLifetimeScoreModel { UserID = userId, Score = score });
             }
             else
             {
-                Database.Scores.UpdateRow(new UserLifetimeScoreModel { Score = user.Score + score }, userId);
+                _database.Scores.UpdateRow(new UserLifetimeScoreModel { Score = user.Score + score }, userId);
             }
         }
 
         public void AddLifetimeWin(ulong userId)
         {
-            var user = Database.Scores.GetRow(userId);
+            var user = _database.Scores.GetRow(userId);
             if (user == null)
             {
                 // If user does not exist, create them
-                Database.Scores.AddRow(new UserLifetimeScoreModel { UserID = userId, Wins = 1});
+                _database.Scores.AddRow(new UserLifetimeScoreModel { UserID = userId, Wins = 1});
             }
             else
             {
-                Database.Scores.UpdateRow(new UserLifetimeScoreModel { Wins = user.Wins + 1 }, userId);
+                _database.Scores.UpdateRow(new UserLifetimeScoreModel { Wins = user.Wins + 1 }, userId);
             }
         }
 
@@ -46,7 +51,7 @@ namespace TriviaBot.Services
             {
                 numberOfScores = 10;
             }
-            return Database.Scores.Cast<UserLifetimeScoreModel>().OrderBy(x => x.Score).Take(numberOfScores).ToList();
+            return _database.Scores.Cast<UserLifetimeScoreModel>().OrderBy(x => x.Score).Take(numberOfScores).ToList();
         }
     }
 }
