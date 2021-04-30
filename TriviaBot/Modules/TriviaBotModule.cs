@@ -8,9 +8,9 @@ using System.Text;
 using System.Threading.Tasks;
 using TriviaBot.Services;
 
-namespace TriviaBot.Services
+namespace TriviaBot.Modules
 {
-    public class TriviaBotModuleNew : ModuleBase<SocketCommandContext>, ITriviaBotModule
+    public class TriviaBotModule : ModuleBase<SocketCommandContext>, ITriviaBotModule
     {
         private readonly DiscordSocketClient _discord;
         private readonly TriviaBotServiceFactory _triviaBotFactory;
@@ -18,7 +18,7 @@ namespace TriviaBot.Services
 
         static Dictionary<ulong, ITriviaBotService> TriviaBots { get; set; } = new Dictionary<ulong, ITriviaBotService>();
 
-        public TriviaBotModuleNew(DiscordSocketClient discord, TriviaBotServiceFactory triviaBotFactory, ILifetimeScorekeeper lifetimeScorekeeper)
+        public TriviaBotModule(DiscordSocketClient discord, TriviaBotServiceFactory triviaBotFactory, ILifetimeScorekeeper lifetimeScorekeeper)
         {
             _discord = discord;
             _triviaBotFactory = triviaBotFactory;
@@ -99,7 +99,7 @@ namespace TriviaBot.Services
                                  "Top Scores:\n" +
                                  "User          Score   Wins\n" +
                                  "----------------------------\n";
-            foreach(UserLifetimeScoreModel score in scores)
+            foreach (UserLifetimeScoreModel score in scores)
             {
                 string username = _discord.GetUser(score.UserID).Username;
                 scoreString += $"{username,-15}  {score.Score,-6}  {score.Wins,-4}\n";
