@@ -101,7 +101,8 @@ namespace TriviaBot.Modules
                                  "----------------------------\n";
             foreach (UserLifetimeScoreModel score in scores)
             {
-                string username = _discord.GetUser(score.UserID).Username;
+                // Get the user's username. If no user with the user ID is found, just return the ID instead
+                string username = _discord.GetUser(score.UserID)?.Username ?? score.UserID.ToString();
                 scoreString += $"{username,-15}  {score.Score,-6}  {score.Wins,-4}\n";
             }
 
