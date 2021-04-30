@@ -37,5 +37,23 @@ namespace TriviaBot.Properties {
                 this["ConnectionString"] = value;
             }
         }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("25")]
+        public uint MaxNumberQuestions {
+            get {
+                return ((uint)(this["MaxNumberQuestions"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("10")]
+        public uint DefaultNumberQuestions {
+            get {
+                return ((uint)(this["DefaultNumberQuestions"]));
+            }
+        }
     }
 }

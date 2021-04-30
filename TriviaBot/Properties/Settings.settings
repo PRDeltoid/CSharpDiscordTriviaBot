@@ -6,5 +6,11 @@
       <Value Profile="(Default)">Server=tcp:trivia-bot-server.database.windows.net,1433;Initial Catalog=TriviaBotDB;Persist Security Info=True;User ID=taylor;Password=iyIxyM0nNILiAaKBq4th;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=True;Connection Timeout=30;
 </Value>
     </Setting>
+    <Setting Name="MaxNumberQuestions" Type="System.UInt32" Scope="Application">
+      <Value Profile="(Default)">25</Value>
+    </Setting>
+    <Setting Name="DefaultNumberQuestions" Type="System.UInt32" Scope="Application">
+      <Value Profile="(Default)">10</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

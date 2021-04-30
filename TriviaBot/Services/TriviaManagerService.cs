@@ -65,7 +65,7 @@ namespace TriviaBot.Services
             }
         }
 
-        public async void Start(int numberOfQuestions, string difficulty)
+        public async void Start(uint numberOfQuestions, string difficulty)
         {
             IsRunning = true;
             // Get rid of any answered questions

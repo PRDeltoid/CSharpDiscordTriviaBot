@@ -26,7 +26,7 @@ namespace TriviaBot
         /// <param name="questionCount">The number of questions to pull. Try to keep this from being too large</param>
         /// <param name="difficulty">a string representing difficulty. Easy, medium, hard on OpenTDB</param>
         /// <param name="callback">A function to call when the questionset is ready. Must accept an IQuestionSet.</param>
-        async public void GetNewQuestionSet(int questionCount, string difficulty, Action<IQuestionSet> callback)
+        async public void GetNewQuestionSet(uint questionCount, string difficulty, Action<IQuestionSet> callback)
         {
             try
             {
@@ -90,7 +90,7 @@ namespace TriviaBot
         /// <param name="questionCount">The number of questions to pull</param>
         /// <param name="difficulty">The difficulty. Can be "easy", "medium" or "hard"</param>
         /// <returns>The composed URL</returns>
-        private string ComposeURL(int questionCount, string difficulty)
+        private string ComposeURL(uint questionCount, string difficulty)
         {
             // Compose a URL with question count and optional difficulty
             string v = $"https://opentdb.com/api.php?amount={ questionCount }&type=multiple";

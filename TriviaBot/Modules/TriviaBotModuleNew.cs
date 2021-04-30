@@ -13,13 +13,15 @@ namespace TriviaBot.Services
     public class TriviaBotModuleNew : ModuleBase<SocketCommandContext>, ITriviaBotModule
     {
         private readonly DiscordSocketClient _discord;
+        private readonly TriviaBotServiceFactory _triviaBotFactory;
         private readonly ILifetimeScorekeeper _lifetimeScorekeeper;
 
-        static Dictionary<ulong, TriviaBotService> TriviaBots { get; set; } = new Dictionary<ulong, TriviaBotService>();
+        static Dictionary<ulong, ITriviaBotService> TriviaBots { get; set; } = new Dictionary<ulong, ITriviaBotService>();
 
-        public TriviaBotModuleNew(DiscordSocketClient discord, ILifetimeScorekeeper lifetimeScorekeeper) //, CommandService commandService)
+        public TriviaBotModuleNew(DiscordSocketClient discord, TriviaBotServiceFactory triviaBotFactory, ILifetimeScorekeeper lifetimeScorekeeper)
         {
             _discord = discord;
+            _triviaBotFactory = triviaBotFactory;
             _lifetimeScorekeeper = lifetimeScorekeeper;
         }
 
@@ -36,15 +38,13 @@ namespace TriviaBot.Services
                 return null;
             }
 
-            //TODO: Create factory to generate trivia bots using DI'd services/managers
-            var triviaBot = new TriviaBotService(Context.Channel, new ChatService(_discord),new ScoreKeeperService(_discord), new LifetimeScorekeeperService(), new QuestionSetManager());
+            var triviaBot = _triviaBotFactory.CreateTriviaBotService();
+            triviaBot.Channel = Context.Channel;
             TriviaBots.Add(Context.Channel.Id, triviaBot);
 
             // 10 questions by default
-            // Hardcoded 20 question max at the moment (over 20 is invalid and becomes default)
-            //TODO: Load max questions from settings
-            int numberOfQuestions = 10;
-            if (args.Length > 0 && int.TryParse(args[0], out int parsedNumber) && numberOfQuestions < 20)
+            uint numberOfQuestions = Properties.Settings.Default.DefaultNumberQuestions;
+            if (args.Length > 0 && uint.TryParse(args[0], out uint parsedNumber) && numberOfQuestions < Properties.Settings.Default.MaxNumberQuestions)
             {
                 numberOfQuestions = parsedNumber;
             }
@@ -63,7 +63,7 @@ namespace TriviaBot.Services
         [Alias("trivia stop")]
         public Task TriviaStopAsync()
         {
-            TriviaBots.TryGetValue(Context.Channel.Id, out TriviaBotService bot);
+            TriviaBots.TryGetValue(Context.Channel.Id, out ITriviaBotService bot);
             if (bot != null)
             {
                 bot.Stop();
@@ -78,7 +78,7 @@ namespace TriviaBot.Services
             user = user ?? Context.User;
             // Exit early if no user is passed
             if (user == null) { return null; }
-            TriviaBots.TryGetValue(Context.Channel.Id, out TriviaBotService bot);
+            TriviaBots.TryGetValue(Context.Channel.Id, out ITriviaBotService bot);
             if (bot != null)
             {
                 bot.VoteSkip(Context.User);
@@ -112,7 +112,7 @@ namespace TriviaBot.Services
 
         public void CheckAnswer(SocketMessage rawMessage)
         {
-            TriviaBots.TryGetValue(rawMessage.Channel.Id, out TriviaBotService bot);
+            TriviaBots.TryGetValue(rawMessage.Channel.Id, out ITriviaBotService bot);
             if (bot != null)
             {
                 bot.CheckAnswer(rawMessage);

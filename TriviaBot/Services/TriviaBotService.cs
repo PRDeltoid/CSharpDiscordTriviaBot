@@ -22,7 +22,6 @@ namespace TriviaBot.Services
         readonly IQuestionSetManager _questionSetManager;
         private readonly IScoreKeeperService _scoreKeeper;
         private readonly ILifetimeScorekeeper _lifetimeScoreService;
-        private IChannel _channel;
         private IChatService _chatService;
         readonly Timer messageSendTimer;
         readonly Queue<string> messageSendingQueue;
@@ -34,10 +33,10 @@ namespace TriviaBot.Services
 
         #region Properties
         public bool IsRunning { get; set; }
+        public IChannel Channel { get; set; }
         #endregion
-        public TriviaBotService(IChannel channel, IChatService chatService, IScoreKeeperService scoreKeeper, ILifetimeScorekeeper lifetimeScoreService, IQuestionSetManager questionSetManager)
+        public TriviaBotService(IChatService chatService, IScoreKeeperService scoreKeeper, ILifetimeScorekeeper lifetimeScoreService, IQuestionSetManager questionSetManager)
         {
-            _channel = channel;
             _chatService = chatService;
             _questionSetManager = questionSetManager;
             _scoreKeeper = scoreKeeper;
@@ -94,7 +93,7 @@ namespace TriviaBot.Services
             }
         }
 
-        public void Start(int numberOfQuestions, string difficulty)
+        public void Start(uint numberOfQuestions, string difficulty)
         {
             IsRunning = true;
             // Get rid of any answered questions
@@ -201,10 +200,10 @@ namespace TriviaBot.Services
 
         private void MessageTimer_Elapsed(object sender, ElapsedEventArgs e)
         {
-            // If we have messages to send, send 'em!
-            if (messageSendingQueue.Count > 0)
+            // If we have messages to send and place to send 'em, then send 'em!
+            if (messageSendingQueue.Count > 0 && Channel != null)
             {
-                _chatService.SendMessage(_channel, messageSendingQueue.Dequeue());
+                _chatService.SendMessage(Channel, messageSendingQueue.Dequeue());
             }
         }
 

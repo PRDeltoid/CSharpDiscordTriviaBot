@@ -21,11 +21,13 @@ namespace TriviaBot
                 .AddSingleton<CommandService>()
                 .AddSingleton<CommandHandlingService>()
                 .AddSingleton<AnswerHandlingService>()
+                .AddSingleton<Database>()
                 .AddScoped<ILifetimeScorekeeper, LifetimeScorekeeperService>()
                 .AddScoped<ITriviaBotModule, TriviaBotModuleNew>()
                 .AddScoped<IScoreKeeperService, ScoreKeeperService>()
                 .AddScoped<IQuestionSetManager, QuestionSetManager>()
                 .AddScoped<ITriviaBotService, TriviaBotService>()
+                .AddScoped<TriviaBotServiceFactory>()
                 .AddSingleton<HttpClient>()
                 .BuildServiceProvider();
         }
