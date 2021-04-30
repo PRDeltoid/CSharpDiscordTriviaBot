@@ -26,6 +26,7 @@ namespace TriviaBot
                 .AddScoped<ITriviaBotModule, TriviaBotModule>()
                 .AddScoped<IScoreKeeperService, ScoreKeeperService>()
                 .AddScoped<IQuestionSetManager, QuestionSetManager>()
+                .AddScoped<IChatService, ChatService>()
                 .AddScoped<ITriviaBotService, TriviaBotService>()
                 .AddScoped<TriviaBotServiceFactory>()
                 .AddSingleton<HttpClient>()
