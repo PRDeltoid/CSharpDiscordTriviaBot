@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TriviaBot.Extensions;
 using TriviaBot.Services;
 
 namespace TriviaBot.Modules
@@ -90,20 +91,29 @@ namespace TriviaBot.Modules
         [Alias("trivia top")]
         public Task TriviaPrintTopScoresAsync(IUser user = null, int numberOfScores = 10)
         {
-            user = user ?? Context.User;
+            user ??= Context.User;
             // Exit early if no user is passed
             if (user == null) { return null; }
+
+            var userColLen = 25;
+            string userColString = "User";
+            int scoreColLen = 8;
+            string scoreColString = "Score";
+            int winsColLen = 5;
+            string winsColString = "Wins";
 
             var scores = _lifetimeScorekeeper.GetTopScores(numberOfScores);
             string scoreString = "```" +
                                  "Top Scores:\n" +
-                                 "User          Score   Wins\n" +
-                                 "----------------------------\n";
+                                 userColString.PadRight(userColLen) + scoreColString.PadRight(scoreColLen) + winsColString.PadRight(winsColLen) + "\n" +
+                                 new string('-', userColLen + scoreColLen + winsColLen) + "\n";
+
             foreach (UserLifetimeScoreModel score in scores)
             {
                 // Get the user's username. If no user with the user ID is found, just return the ID instead
                 string username = _discord.GetUser(score.UserID)?.Username ?? score.UserID.ToString();
-                scoreString += $"{username,-15}  {score.Score,-6}  {score.Wins,-4}\n";
+                scoreString += $"{username.PadRight(userColLen)}{score.Score.ToString().PadBoth(scoreColLen)}{score.Wins.ToString().PadBoth(winsColLen)}\n";
+
             }
 
             scoreString += "```";
