@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net.Http;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,6 +25,8 @@ namespace TriviaBot
             // its documentation for the best way to do this.
             using (var services = ConfigurationContainer.ConfigureServices())
             {
+                LogAsync(new LogMessage(LogSeverity.Info, "TriviaBot", $"Version: {Assembly.GetExecutingAssembly().GetName().Version}"));
+
                 var _discord = services.GetRequiredService<DiscordSocketClient>();
                 _discord.Log += LogAsync;
                 _discord.LoginAsync(TokenType.Bot, Environment.GetEnvironmentVariable("DISCORD_TOKEN"));
