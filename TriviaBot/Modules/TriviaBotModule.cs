@@ -1,17 +1,14 @@
 ﻿using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using TriviaBot.Extensions;
 using TriviaBot.Services;
 
 namespace TriviaBot.Modules
 {
-    public class TriviaBotModule : ModuleBase<SocketCommandContext>, ITriviaBotModule
+    public class TriviaBotModule : ModuleBase<SocketCommandContext>
     {
         private readonly DiscordSocketClient _discord;
         private readonly TriviaBotServiceFactory _triviaBotFactory;
@@ -34,12 +31,13 @@ namespace TriviaBot.Modules
         {
             // Make sure only one triviabot is running per server so we can ignore multiple channel issues
             if (TriviaBots.ContainsKey(Context.Channel.Id))
+
             {
                 Context.Channel.SendMessageAsync("Sorry, cannot start TriviaBot here. There is already one running in this channel.");
                 return null;
             }
 
-            var triviaBot = _triviaBotFactory.CreateTriviaBotService();
+            ITriviaBotService triviaBot = _triviaBotFactory.CreateTriviaBotService();
             triviaBot.Channel = Context.Channel;
             TriviaBots.Add(Context.Channel.Id, triviaBot);
 
@@ -65,10 +63,7 @@ namespace TriviaBot.Modules
         public Task TriviaStopAsync()
         {
             TriviaBots.TryGetValue(Context.Channel.Id, out ITriviaBotService bot);
-            if (bot != null)
-            {
-                bot.Stop();
-            }
+            bot?.Stop();
             return null;
         }
 
@@ -76,14 +71,11 @@ namespace TriviaBot.Modules
         [Alias("trivia skip")]
         public Task TriviaSkipAsync(IUser user = null)
         {
-            user = user ?? Context.User;
+            user ??= Context.User;
             // Exit early if no user is passed
             if (user == null) { return null; }
             TriviaBots.TryGetValue(Context.Channel.Id, out ITriviaBotService bot);
-            if (bot != null)
-            {
-                bot.VoteSkip(Context.User);
-            }
+            bot?.VoteSkip(Context.User);
             return null;
         }
 
@@ -95,7 +87,7 @@ namespace TriviaBot.Modules
             // Exit early if no user is passed
             if (user == null) { return null; }
 
-            var userColLen = 25;
+            int userColLen = 25;
             string userColString = "User";
             int scoreColLen = 8;
             string scoreColString = "Score";
@@ -124,10 +116,7 @@ namespace TriviaBot.Modules
         public void CheckAnswer(SocketMessage rawMessage)
         {
             TriviaBots.TryGetValue(rawMessage.Channel.Id, out ITriviaBotService bot);
-            if (bot != null)
-            {
-                bot.CheckAnswer(rawMessage);
-            }
+            bot?.CheckAnswer(rawMessage);
         }
         #endregion
     }

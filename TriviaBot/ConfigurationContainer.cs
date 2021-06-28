@@ -1,12 +1,7 @@
 ﻿using Discord.Commands;
 using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
-using System.Text;
-using System.Threading.Tasks;
 using TriviaBot.Modules;
 using TriviaBot.Services;
 
@@ -22,8 +17,8 @@ namespace TriviaBot
                 .AddSingleton<CommandHandlingService>()
                 .AddSingleton<AnswerHandlingService>()
                 .AddSingleton<Database>()
+                .AddScoped<TriviaBotModule>()
                 .AddScoped<ILifetimeScorekeeper, LifetimeScorekeeperService>()
-                .AddScoped<ITriviaBotModule, TriviaBotModule>()
                 .AddScoped<IScoreKeeperService, ScoreKeeperService>()
                 .AddScoped<IQuestionSetManager, QuestionSetManager>()
                 .AddScoped<IChatService, ChatService>()

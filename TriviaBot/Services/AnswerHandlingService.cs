@@ -1,10 +1,5 @@
 ﻿using Discord;
 using Discord.WebSocket;
-using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using TriviaBot.Modules;
 
@@ -13,9 +8,9 @@ namespace TriviaBot.Services
     public class AnswerHandlingService
     {
         private readonly DiscordSocketClient _discord;
-        private readonly ITriviaBotModule _triviaBotManager;
+        private readonly TriviaBotModule _triviaBotManager;
 
-        public AnswerHandlingService(DiscordSocketClient discord, ITriviaBotModule triviaBotManager)
+        public AnswerHandlingService(DiscordSocketClient discord, TriviaBotModule triviaBotManager)
         {
             _discord = discord;
             _triviaBotManager = triviaBotManager;
@@ -31,7 +26,7 @@ namespace TriviaBot.Services
         /// <param name="rawMessage">The message to interpret</param>
         private async Task MessageReceivedAsync(SocketMessage rawMessage)
         {
-            if (!(rawMessage is SocketUserMessage message)) return;
+            if (rawMessage is not SocketUserMessage message) return;
             if (message.Source != MessageSource.User) return;
             if (message.Author.IsBot) { return; }
             if (rawMessage.Content.Length > 1) { return; }

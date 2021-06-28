@@ -1,15 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using System.Timers;
 using Discord;
-using Discord.Commands;
 using Discord.WebSocket;
-using Microsoft.Extensions.DependencyInjection;
-using TriviaBot.Services;
 
 namespace TriviaBot.Services
 {
@@ -222,22 +218,24 @@ namespace TriviaBot.Services
             _questionTimer.Enabled = false;
         }
 
-        private async void TriviaEnding()
+        private async Task TriviaEnding()
         {
             var scores = _scoreKeeper.Scores;
 
+            // Exit early if no scores exist
+            if (scores.Count <= 0) return;
+
             // Find the winner and give them a lifetime win
-            var winner = scores.OrderByDescending(x => x.Score).First();
-            if(winner != null)
-            {
-                _lifetimeScoreService.AddLifetimeWin(winner.Id);
-            }
+            UserScoreModel winner = scores.OrderByDescending(x => x.Score).First();
+            _lifetimeScoreService.AddLifetimeWin(winner.Id);
 
             // Add each user's score to their lifetime record
-            foreach(UserScoreModel score in scores)
+            foreach (UserScoreModel score in scores)
             {
                 _lifetimeScoreService.AddLifetimeScore(score.Id, score.Score);
             }
+
+            // Show the scores to the channel
             await PrintScores(_scoreKeeper.Scores);
         }
         #endregion
