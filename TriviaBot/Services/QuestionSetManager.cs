@@ -10,7 +10,7 @@ namespace TriviaBot
     {
         #region Members 
         int currentQuestionIndex = 0;
-        private readonly TriviaDBQuestionGetterService _questionGetter;
+        private readonly IQuestionGetterService _questionGetter;
 
         #endregion
 
@@ -21,7 +21,7 @@ namespace TriviaBot
         #endregion
 
         #region Constructor
-        public QuestionSetManager(TriviaDBQuestionGetterService questionGetter)
+        public QuestionSetManager(IQuestionGetterService questionGetter)
         {
             _questionGetter = questionGetter;
 
