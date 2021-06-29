@@ -7,18 +7,13 @@ using System.Reflection;
 
 namespace TriviaBot
 {
-    public class DatabaseTable<T, K> : IEnumerable where T : new()
+    public class DatabaseTable<TRowDataClass, TKeyType> : IEnumerable where TRowDataClass : new()
     {
         public string TableName { get; internal set; }
 
-        private static string ConnectionString
-        {
-            get
-            {
-                return System.Configuration.ConfigurationManager.
+        private static string ConnectionString =>
+            System.Configuration.ConfigurationManager.
                 ConnectionStrings["TriviaBotDb"].ConnectionString;
-            }
-        }
 
         public DatabaseTable(string tableName)
         {
@@ -26,10 +21,10 @@ namespace TriviaBot
             CreateTableIfNotExists();
         }
 
-        public bool AddRow(T newRow)
+        public bool AddRow(TRowDataClass newRow)
         {
             //Column name/Value pairs to be used for our new row
-            Dictionary<string, object> values = new Dictionary<string, object>();
+            Dictionary<string, object> values = new();
 
             foreach (string propName in GetAllColumnNames(true))
             {
@@ -64,7 +59,7 @@ namespace TriviaBot
             return true;
         }
 
-        public T GetRow(K id)
+        public TRowDataClass GetRow(TKeyType id)
         {
             using SQLiteConnection connection = new SQLiteConnection(ConnectionString);
             string keyName = GetKeyColumnName();
@@ -77,7 +72,7 @@ namespace TriviaBot
                 if (rows.HasRows)
                 {
                     rows.Read();
-                    var temp = new T();
+                    var temp = new TRowDataClass();
                     //rows.NextResult();
                     foreach (string propName in GetAllColumnNames(true))
                     {
@@ -96,7 +91,7 @@ namespace TriviaBot
             }
         }
 
-        public bool UpdateRow(T newRow, K oldRowId)
+        public bool UpdateRow(TRowDataClass newRow, TKeyType oldRowId)
         {
             // Get all cols excluding key
             var cols = GetAllColumnNames(false);
@@ -141,13 +136,13 @@ namespace TriviaBot
             using SQLiteConnection connection = new SQLiteConnection(ConnectionString);
             try
             {
-                List<T> objects = new List<T>();
+                List<TRowDataClass> objects = new List<TRowDataClass>();
                 connection.Open();
                 SQLiteCommand command = new SQLiteCommand(queryString, connection);
                 using SQLiteDataReader reader = command.ExecuteReader();
                 while (reader.Read())
                 {
-                    var obj = new T();
+                    TRowDataClass obj = new TRowDataClass();
                     foreach (string prop in GetAllColumnNames(true))
                     {
                         SetPropertyValue(obj, reader[prop], prop);
@@ -166,7 +161,7 @@ namespace TriviaBot
         {
             List<string> stringList = new List<string>();
             var keyColumn = GetKeyColumnName();
-            foreach (PropertyInfo prop in typeof(T).GetProperties())
+            foreach (PropertyInfo prop in typeof(TRowDataClass).GetProperties())
             {
                 string propColumnName = GetColumnNameOfProperty(prop);
                 // If the property is a key column and we want to exclude those, continue next loop iteration
@@ -225,15 +220,15 @@ namespace TriviaBot
 
         private static string GetKeyColumnName()
         {
-            PropertyInfo t = typeof(T).GetProperties().
-                            Where(prop => Attribute.IsDefined(prop, typeof(KeyColumn), false)).First();
+            PropertyInfo t = typeof(TRowDataClass).
+                GetProperties().First(prop => Attribute.IsDefined(prop, typeof(KeyColumn), false));
 
             if (t == null)
             {
                 throw new Exception("No key attribute set"); ;
             }
 
-            if (t.PropertyType != typeof(K))
+            if (t.PropertyType != typeof(TKeyType))
             {
                 throw new Exception("Key value type is not the same as marked key attribute.");
             }
@@ -245,15 +240,12 @@ namespace TriviaBot
         private static string GetColumnNameOfProperty(PropertyInfo propInfo)
         {
             // If the prop has the ColumnName attribute, return that instead
-            var col = propInfo.GetCustomAttribute(typeof(ColumnName)) as ColumnName;
-            if (col != null)
+            if (propInfo.GetCustomAttribute(typeof(ColumnName)) is ColumnName col)
             {
                 return col.Name;
             }
-            else
-            {
-                return propInfo.Name;
-            }
+
+            return propInfo.Name;
         }
 
         private static PropertyInfo GetProperty(object t, string propertyName)
@@ -263,13 +255,13 @@ namespace TriviaBot
 
         private static Type GetPropertyType(object t, string propertyName)
         {
-            return t.GetType().GetProperty(propertyName).PropertyType;
+            return t.GetType().GetProperty(propertyName)?.PropertyType;
         }
 
         private static Type GetPropertyType(string propertyName)
         {
-            T t = new T();
-            return t.GetType().GetProperty(propertyName).PropertyType;
+            TRowDataClass t = new TRowDataClass();
+            return t.GetType().GetProperty(propertyName)?.PropertyType;
         }
 
         private object GetPropertyValue(object t, string propertyName)
